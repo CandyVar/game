@@ -298,7 +298,8 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
-
+    # добавление данных в бд
+    # cur.execute(f'INSERT INTO info VALUES(...)')
     pygame.time.delay(1000)
 
 
@@ -336,6 +337,14 @@ enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
+con = sqlite3.connect('Game_db.sqlite')
+cur = con.cursor()
+cur.execute('''
+        CREATE TABLE IF NOT EXISTS info (
+        id INTEGER PRIMARY KEY,
+        equipment TEXT NOT NULL,
+        level_done TEXT NOT NULL)
+        ''')
 state = 1
 
 while True:
