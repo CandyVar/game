@@ -95,6 +95,22 @@ def terminate():
     sys.exit()
 
 
+def pause():
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_m:
+                    return 1
+        font = pygame.font.Font(None, 50)
+        text = font.render("Игра приостановлена", True, (0, 0, 255))
+        text_x = WIDTH // 2 - text.get_width() // 2
+        text_y = HEIGHT // 2 - text.get_height() // 2
+        screen.blit(text, (text_x, text_y))
+        pygame.display.flip()
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -303,6 +319,7 @@ enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 player, level_x, level_y = generate_level(load_level('map.txt'))
+state = 1
 
 while True:
     for event in pygame.event.get():
@@ -334,20 +351,24 @@ while True:
                         fade_out_and_load_new_world(screen, clock, 'map.txt')
                         continue
                     smooth_player_move_up()
+            elif event.key == pygame.K_l:
+                state = 0
+    if state:
+        for enemy in enemy_group:
+            enemy.move_towards_player(player.rect)
 
-    for enemy in enemy_group:
-        enemy.move_towards_player(player.rect)
+        screen.fill((0, 0, 255))
+        tiles_group.draw(screen)
+        walls_group.draw(screen)
+        portals_group.draw(screen)
+        player_group.draw(screen)
+        enemy_group.draw(screen)
+        camera.update(player)
 
-    screen.fill((0, 0, 255))
-    tiles_group.draw(screen)
-    walls_group.draw(screen)
-    portals_group.draw(screen)
-    player_group.draw(screen)
-    enemy_group.draw(screen)
-    camera.update(player)
-
-    for sprite in all_sprites:
-        camera.apply(sprite)
-
+        for sprite in all_sprites:
+            camera.apply(sprite)
+    else:
+        if pause():
+            state = 1
     pygame.display.flip()
     clock.tick(FPS)
