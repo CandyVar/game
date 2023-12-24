@@ -20,7 +20,7 @@ class Wall(pygame.sprite.Sprite):
 class Portal(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(portals_group, all_sprites)
-        self.image = tile_images['wall']
+        self.image = tile_images['portal']
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
@@ -322,6 +322,7 @@ tile_images = {
     'wall': load_image('box.png'),
     'empty': load_image('grass.png'),
     'enemy': load_image('arrow.png'),
+    'portal': load_image('portal.png')
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 
