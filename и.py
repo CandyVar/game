@@ -101,7 +101,7 @@ def pause():
             if ev.type == pygame.QUIT:
                 pygame.quit()
             elif ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_m:
+                if ev.key == pygame.K_ESCAPE:
                     return 1
         font = pygame.font.Font(None, 50)
         text = font.render("Игра приостановлена", True, (0, 0, 0))
@@ -110,7 +110,7 @@ def pause():
         text_w = text.get_width()
         text_h = text.get_height()
         pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
-                                               text_w + 20, text_h + 20), 0)
+                                                   text_w + 20, text_h + 20), 0)
         screen.blit(text, (text_x, text_y))
         pygame.display.flip()
 
@@ -272,6 +272,8 @@ def smooth_player_move_right():
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
+    global base, tiles_group, tile_height, tile_width, camera, all_sprites, player_group, enemy_group, walls_group, \
+        portals_group, player, level_x, level_y, state
     fade_duration = 2000
     fade_steps = 50
     fade_step_duration = fade_duration // fade_steps
@@ -285,18 +287,28 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
         pygame.display.flip()
         pygame.time.delay(fade_step_duration)
         clock.tick(60)
-
-    screen.fill((0, 0, 255))
-    tiles_group.draw(screen)
-    walls_group.draw(screen)
-    portals_group.draw(screen)
-    player_group.draw(screen)
-    enemy_group.draw(screen)
-    camera.update(player)
+    base = load_level(new_map_filename)
+    tile_width = tile_height = 50
+    camera = Camera()
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
+    enemy_group = pygame.sprite.Group()
+    walls_group = pygame.sprite.Group()
+    portals_group = pygame.sprite.Group()
+    player, level_x, level_y = generate_level(load_level(new_map_filename))
+    state = 1
 
     pygame.time.delay(1000)
 
 
+maps = {
+    'easy': ['map.txt', 'map2.txt'],
+    'normal': [],
+    'hard': []
+}
+gamelevel = 'easy'
+maplevel = 0
 pygame.init()
 FPS = 50
 WIDTH, HEIGHT = 500, 500
@@ -313,7 +325,7 @@ tile_images = {
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 
-base = load_level('map.txt')
+base = load_level(maps[gamelevel][0])
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
@@ -322,7 +334,7 @@ player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
-player, level_x, level_y = generate_level(load_level('map.txt'))
+player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
 state = 1
 
 while True:
@@ -352,10 +364,11 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        fade_out_and_load_new_world(screen, clock, 'map.txt')
+                        maplevel += 1
+                        fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         continue
                     smooth_player_move_up()
-            elif event.key == pygame.K_l:
+            elif event.key == pygame.K_ESCAPE:
                 state = 0
     if state:
         for enemy in enemy_group:
