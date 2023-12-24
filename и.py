@@ -104,9 +104,13 @@ def pause():
                 if ev.key == pygame.K_m:
                     return 1
         font = pygame.font.Font(None, 50)
-        text = font.render("Игра приостановлена", True, (0, 0, 255))
+        text = font.render("Игра приостановлена", True, (0, 0, 0))
         text_x = WIDTH // 2 - text.get_width() // 2
         text_y = HEIGHT // 2 - text.get_height() // 2
+        text_w = text.get_width()
+        text_h = text.get_height()
+        pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
+                                               text_w + 20, text_h + 20), 0)
         screen.blit(text, (text_x, text_y))
         pygame.display.flip()
 
