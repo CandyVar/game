@@ -1,6 +1,23 @@
 import os
 import sys
 import pygame
+import sqlite3
+
+
+class Button:
+    def __init__(self, x, y, color, text=''):
+        self.x, self.y = x, y
+        self.width, self.height = 200, 50
+        self.color = color
+        self.text = text
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        if self.text:
+            font = pygame.font.SysFont(None, 20)
+            text = font.render(self.text, 1, (255, 255, 255))
+            screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
+                               self.y + (self.height/2 - text.get_height() / 2)))
 
 
 class Tile(pygame.sprite.Sprite):
@@ -93,6 +110,35 @@ def load_level(filename):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def show_menu():
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    easy = Button(150, 180, (0, 0, 255), 'Easy')
+    normal = Button(150, 280, (0, 0, 255), 'Normal')
+    hard = Button(150, 380, (0, 0, 255), 'Hard')
+    easy.draw()
+    normal.draw()
+    hard.draw()
+    font = pygame.font.Font(None, 30)
+    text = font.render("Выберите уровень сложности", True, (0, 0, 0))
+    screen.blit(text, (100, 50))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
+                    return 'easy'
+                elif normal.x < pos[0] < normal.x + normal.width and normal.y < pos[1] < normal.y + normal.height:
+                    return 'normal'
+                elif hard.x < pos[0] < hard.x + hard.width and hard.y < pos[1] < hard.y + hard.height:
+                    return 'hard'
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def pause():
@@ -308,7 +354,6 @@ maps = {
     'normal': [],
     'hard': []
 }
-gamelevel = 'easy'
 maplevel = 0
 pygame.init()
 FPS = 50
@@ -317,6 +362,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((0, 0, 255))
 start_screen()
+gamelevel = show_menu()
 STEP = 50
 
 tile_images = {
