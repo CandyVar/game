@@ -141,6 +141,11 @@ def show_menu():
         clock.tick(FPS)
 
 
+def add_data(diff, lev, hp, life):
+    cur.execute(f'INSERT INTO info VALUES ({diff}, {lev}, {hp}, {life})')
+    con.commit()
+
+
 def pause():
     while True:
         for ev in pygame.event.get():
@@ -344,8 +349,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
-    # добавление данных в бд
-    # cur.execute(f'INSERT INTO info VALUES(...)')
+    # add_data(gamelevel, maplevel, health, lives)
     pygame.time.delay(1000)
 
 
@@ -388,8 +392,10 @@ cur = con.cursor()
 cur.execute('''
         CREATE TABLE IF NOT EXISTS info (
         id INTEGER PRIMARY KEY,
-        equipment TEXT NOT NULL,
-        level_done TEXT NOT NULL)
+        gamelevel TEXT NOT NULL,
+        maplevel TEXT NOT NULL,
+        health TEXT NOT NULL,
+        num_lives TEXT NOT NULL)
         ''')
 state = 1
 

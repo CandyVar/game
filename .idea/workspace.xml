@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="примерный вид базы данных">
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ меню после заставки">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
     </list>
@@ -127,7 +127,14 @@
       <option name="project" value="LOCAL" />
       <updated>1703449807035</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="+ меню после заставки">
+      <created>1703452069689</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1703452069689</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -183,6 +190,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="data" />
     <MESSAGE value="примерный вид базы данных" />
-    <option name="LAST_COMMIT_MESSAGE" value="примерный вид базы данных" />
+    <MESSAGE value="+ меню после заставки" />
+    <option name="LAST_COMMIT_MESSAGE" value="+ меню после заставки" />
   </component>
 </project>
