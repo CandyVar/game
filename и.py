@@ -1,7 +1,6 @@
 import os
 import sys
 import pygame
-import sqlite3
 
 
 class Button:
@@ -17,7 +16,7 @@ class Button:
             font = pygame.font.SysFont(None, 20)
             text = font.render(self.text, 1, (255, 255, 255))
             screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
-                               self.y + (self.height/2 - text.get_height() / 2)))
+                               self.y + (self.height / 2 - text.get_height() / 2)))
 
 
 def load_image(name, colorkey=None):
@@ -40,9 +39,9 @@ class Bomb(pygame.sprite.Sprite):
     def __init__(self, player_rect, *group):
         super().__init__(*group)
         self.radius = 75
-        self.color = (255, 0, 0, 50)  # Red color
+        self.color = (255, 0, 0, 100)  # Red color
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
+        pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius, 10)
         self.rect = self.image.get_rect(center=(player_rect.centerx, player_rect.centery))
 
     def update_position(self, player_rect):
@@ -115,15 +114,6 @@ class Camera:
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
 
 
 def load_level(filename):
@@ -243,6 +233,25 @@ def start_screen():
         clock.tick(FPS)
 
 
+def animation_update():
+    screen.fill((0, 0, 255))
+    tiles_group.draw(screen)
+    walls_group.draw(screen)
+    portals_group.draw(screen)
+    player_group.draw(screen)
+    enemy_group.draw(screen)
+    bomb.update_position(player.rect)
+    bomb_group.draw(screen)
+    bomb_group.update()
+    camera.update(player)
+
+    for sprite in all_sprites:
+        camera.apply(sprite)
+
+    pygame.display.flip()
+    clock.tick(FPS)
+
+
 def smooth_player_move_up():
     for i in range(5):
         player.image = pygame.transform.scale(load_image('2.png'), (50, 50))
@@ -252,20 +261,7 @@ def smooth_player_move_up():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
+        animation_update()
 
 def smooth_player_move_down():
     for i in range(5):
@@ -276,19 +272,7 @@ def smooth_player_move_down():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        animation_update()
 
 
 def smooth_player_move_left():
@@ -303,19 +287,7 @@ def smooth_player_move_left():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        animation_update()
 
 
 def smooth_player_move_right():
@@ -330,19 +302,7 @@ def smooth_player_move_right():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        animation_update()
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
