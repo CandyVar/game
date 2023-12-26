@@ -356,7 +356,7 @@ STEP = 50
 tile_images = {
     'wall': load_image('box.png'),
     'empty': load_image('grass.png'),
-    'enemy': load_image('arrow.png'),
+    'enemy': pygame.transform.scale(load_image('ghost.png'), (50, 50)),
     'portal': load_image('portal.png')
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
