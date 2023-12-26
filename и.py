@@ -1,6 +1,7 @@
 import os
-import random
 import sys
+import time
+
 import pygame
 
 
@@ -66,8 +67,9 @@ class Portal(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         self.hp = 100
-        self.life = 1
+        self.life = LIFE
         self.recoil_distance = 50
+        self.last_damage_time = 0
         super().__init__(player_group, all_sprites)
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
@@ -75,9 +77,14 @@ class Player(pygame.sprite.Sprite):
     def take_hit(self, damage):
         if self.life <= 0:
             terminate()
-        self.hp -= damage
-        if self.hp <= 0:
+        elif self.hp <= 0:
             self.life -= 1
+            self.hp = 100
+
+        current_time = time.time()
+        if current_time - self.last_damage_time >= 0.5:
+            self.hp -= damage
+            self.last_damage_time = current_time
 
     def apply_recoil(self, enemy_rect):
         dx = self.rect.x - enemy_rect.x
@@ -372,6 +379,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
+    player.life = LIFE
 
     pygame.time.delay(1000)
 
@@ -386,6 +394,7 @@ maplevel = 0
 pygame.init()
 FPS = 50
 DAMAGE = 20
+LIFE = 1
 WIDTH, HEIGHT = 500, 500
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -423,17 +432,6 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
-        elif pygame.sprite.spritecollide(player, enemy_group, False):
-            player.take_hit(DAMAGE)
-            random_number = random.randint(1, 4)
-            if random_number == 1:
-                smooth_player_move_up()
-            elif random_number == 2:
-                smooth_player_move_down()
-            elif random_number == 3:
-                smooth_player_move_left()
-            elif random_number == 4:
-                smooth_player_move_right()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
             if range_a.rect.collidepoint(event.pos):
@@ -491,9 +489,17 @@ while True:
             camera.apply(sprite)
 
         draw_player_health()
+        LIFE = player.life
 
         if player.life == 0 and player.hp == 0:
             terminate()
+        for enemy in enemy_group:
+            if pygame.sprite.collide_rect(player, enemy):
+                enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
+                num_enemies_in_radius = len(enemies_in_radius)
+                total_damage = len(enemies_in_radius) * DAMAGE
+                player.take_hit(total_damage)
+
 
     else:
         if pause():
