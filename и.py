@@ -1,6 +1,23 @@
 import os
 import sys
 import pygame
+import sqlite3
+
+
+class Button:
+    def __init__(self, x, y, color, text=''):
+        self.x, self.y = x, y
+        self.width, self.height = 200, 50
+        self.color = color
+        self.text = text
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        if self.text:
+            font = pygame.font.SysFont(None, 20)
+            text = font.render(self.text, 1, (255, 255, 255))
+            screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
+                               self.y + (self.height/2 - text.get_height() / 2)))
 
 
 def load_image(name, colorkey=None):
@@ -52,6 +69,11 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+    def move_check(self):
+        if (not pygame.sprite.spritecollideany(player, tiles_group) or
+                pygame.sprite.spritecollideany(player, tiles_group)):
+            return False
+
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, speed=0.1):
@@ -95,6 +117,15 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
 def load_level(filename):
     filename = "data/" + filename
     with open(filename, 'r') as mapFile:
@@ -107,6 +138,35 @@ def load_level(filename):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def show_menu():
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    easy = Button(150, 180, (0, 0, 255), 'Easy')
+    normal = Button(150, 280, (0, 0, 255), 'Normal')
+    hard = Button(150, 380, (0, 0, 255), 'Hard')
+    easy.draw()
+    normal.draw()
+    hard.draw()
+    font = pygame.font.Font(None, 30)
+    text = font.render("Выберите уровень сложности", True, (0, 0, 0))
+    screen.blit(text, (100, 50))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
+                    return 'easy'
+                elif normal.x < pos[0] < normal.x + normal.width and normal.y < pos[1] < normal.y + normal.height:
+                    return 'normal'
+                elif hard.x < pos[0] < hard.x + hard.width and hard.y < pos[1] < hard.y + hard.height:
+                    return 'hard'
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def pause():
@@ -192,7 +252,19 @@ def smooth_player_move_up():
             if event.type == pygame.QUIT:
                 terminate()
 
-        update()
+        screen.fill((0, 0, 255))
+        tiles_group.draw(screen)
+        walls_group.draw(screen)
+        portals_group.draw(screen)
+        player_group.draw(screen)
+        enemy_group.draw(screen)
+        camera.update(player)
+
+        for sprite in all_sprites:
+            camera.apply(sprite)
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def smooth_player_move_down():
@@ -204,7 +276,19 @@ def smooth_player_move_down():
             if event.type == pygame.QUIT:
                 terminate()
 
-        update()
+        screen.fill((0, 0, 255))
+        tiles_group.draw(screen)
+        walls_group.draw(screen)
+        portals_group.draw(screen)
+        player_group.draw(screen)
+        enemy_group.draw(screen)
+        camera.update(player)
+
+        for sprite in all_sprites:
+            camera.apply(sprite)
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def smooth_player_move_left():
@@ -219,7 +303,19 @@ def smooth_player_move_left():
             if event.type == pygame.QUIT:
                 terminate()
 
-        update()
+        screen.fill((0, 0, 255))
+        tiles_group.draw(screen)
+        walls_group.draw(screen)
+        portals_group.draw(screen)
+        player_group.draw(screen)
+        enemy_group.draw(screen)
+        camera.update(player)
+
+        for sprite in all_sprites:
+            camera.apply(sprite)
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def smooth_player_move_right():
@@ -234,26 +330,19 @@ def smooth_player_move_right():
             if event.type == pygame.QUIT:
                 terminate()
 
-        update()
+        screen.fill((0, 0, 255))
+        tiles_group.draw(screen)
+        walls_group.draw(screen)
+        portals_group.draw(screen)
+        player_group.draw(screen)
+        enemy_group.draw(screen)
+        camera.update(player)
 
+        for sprite in all_sprites:
+            camera.apply(sprite)
 
-def update():
-    screen.fill((0, 0, 255))
-    tiles_group.draw(screen)
-    walls_group.draw(screen)
-    portals_group.draw(screen)
-    player_group.draw(screen)
-    enemy_group.draw(screen)
-    bomb.update_position(player.rect)
-    bomb_group.draw(screen)
-    bomb_group.update()
-    camera.update(player)
-
-    for sprite in all_sprites:
-        camera.apply(sprite)
-
-    pygame.display.flip()
-    clock.tick(FPS)
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
@@ -301,6 +390,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((0, 0, 255))
 start_screen()
+gamelevel = show_menu()
 STEP = 50
 
 tile_images = {
