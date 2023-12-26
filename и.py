@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import pygame
 
@@ -35,7 +36,7 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
-class Bomb(pygame.sprite.Sprite):
+class Range(pygame.sprite.Sprite):
     def __init__(self, player_rect, *group):
         super().__init__(*group)
         self.radius = 75
@@ -64,14 +65,33 @@ class Portal(pygame.sprite.Sprite):
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
+        self.hp = 100
+        self.life = 1
+        self.recoil_distance = 50
         super().__init__(player_group, all_sprites)
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
-    def move_check(self):
-        if (not pygame.sprite.spritecollideany(player, tiles_group) or
-                pygame.sprite.spritecollideany(player, tiles_group)):
-            return False
+    def take_hit(self, damage):
+        if self.life <= 0:
+            terminate()
+        self.hp -= damage
+        if self.hp <= 0:
+            self.life -= 1
+
+    def apply_recoil(self, enemy_rect):
+        dx = self.rect.x - enemy_rect.x
+        dy = self.rect.y - enemy_rect.y
+        dist = max(abs(dx), abs(dy))
+
+        if dist != 0:
+            dx = dx / dist * self.recoil_distance
+            dy = dy / dist * self.recoil_distance
+
+        new_x = self.rect.x + dx
+        new_y = self.rect.y + dy
+        self.rect.x = new_x
+        self.rect.y = new_y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -143,16 +163,20 @@ def show_menu():
     text = font.render("Выберите уровень сложности", True, (0, 0, 0))
     screen.blit(text, (100, 50))
     while True:
+        global DAMAGE
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
+                    DAMAGE = 5
                     return 'easy'
                 elif normal.x < pos[0] < normal.x + normal.width and normal.y < pos[1] < normal.y + normal.height:
+                    DAMAGE = 10
                     return 'normal'
                 elif hard.x < pos[0] < hard.x + hard.width and hard.y < pos[1] < hard.y + hard.height:
+                    DAMAGE = 20
                     return 'hard'
 
         pygame.display.flip()
@@ -233,6 +257,19 @@ def start_screen():
         clock.tick(FPS)
 
 
+def draw_player_health():
+    font = pygame.font.Font(None, 30)  # Выберите шрифт и размер шрифта по вашему вкусу
+    text = font.render(f'Player HP: {player.hp} | Life: {player.life}', True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.topright = (WIDTH - 10, 10)
+
+    # Отрисовка белой рамки
+    pygame.draw.rect(screen, (255, 255, 255), (WIDTH - 245, 5, 240, 35), 2)
+
+    # Отрисовка текста
+    screen.blit(text, text_rect)
+
+
 def animation_update():
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
@@ -240,13 +277,15 @@ def animation_update():
     portals_group.draw(screen)
     player_group.draw(screen)
     enemy_group.draw(screen)
-    bomb.update_position(player.rect)
-    bomb_group.draw(screen)
-    bomb_group.update()
+    range_a.update_position(player.rect)
+    range_group.draw(screen)
+    range_group.update()
     camera.update(player)
 
     for sprite in all_sprites:
         camera.apply(sprite)
+
+    draw_player_health()
 
     pygame.display.flip()
     clock.tick(FPS)
@@ -262,6 +301,7 @@ def smooth_player_move_up():
                 terminate()
 
         animation_update()
+
 
 def smooth_player_move_down():
     for i in range(5):
@@ -338,13 +378,14 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
 
 maps = {
     'easy': ['map.txt', 'map2.txt'],
-    'normal': [],
-    'hard': []
+    'normal': ['map.txt', 'map2.txt'],
+    'hard': ['map.txt', 'map2.txt']
 }
-gamelevel = 'easy'
+game_level = 'easy'
 maplevel = 0
 pygame.init()
 FPS = 50
+DAMAGE = 20
 WIDTH, HEIGHT = 500, 500
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -373,20 +414,31 @@ enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
-bomb = Bomb(player.rect)
-bomb_group = pygame.sprite.Group()
-bomb_group.add(bomb)
+range_a = Range(player.rect)
+range_group = pygame.sprite.Group()
+range_group.add(range_a)
 state = 1
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+        elif pygame.sprite.spritecollide(player, enemy_group, False):
+            player.take_hit(DAMAGE)
+            random_number = random.randint(1, 4)
+            if random_number == 1:
+                smooth_player_move_up()
+            elif random_number == 2:
+                smooth_player_move_down()
+            elif random_number == 3:
+                smooth_player_move_left()
+            elif random_number == 4:
+                smooth_player_move_right()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
-            if bomb.rect.collidepoint(event.pos):
+            if range_a.rect.collidepoint(event.pos):
                 # Check for collision between enemies and the bomb
-                enemy_hit = pygame.sprite.spritecollideany(bomb, enemy_group)
+                enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
                 if enemy_hit:
                     # Register a hit on the enemy
                     enemy_hit.take_hit()
@@ -430,13 +482,18 @@ while True:
         portals_group.draw(screen)
         player_group.draw(screen)
         enemy_group.draw(screen)
-        bomb.update_position(player.rect)
-        bomb_group.draw(screen)
-        bomb_group.update()
+        range_a.update_position(player.rect)
+        range_group.draw(screen)
+        range_group.update()
         camera.update(player)
 
         for sprite in all_sprites:
             camera.apply(sprite)
+
+        draw_player_health()
+
+        if player.life == 0 and player.hp == 0:
+            terminate()
 
     else:
         if pause():
