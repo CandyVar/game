@@ -3,11 +3,33 @@ import sys
 import pygame
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, player_rect, *group):
+        super().__init__(*group)
+        self.radius = 75
+        self.color = (255, 0, 0, 50)  # Red color
+        self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
+        self.rect = self.image.get_rect(center=(player_rect.centerx, player_rect.centery))
+
+    def update_position(self, player_rect):
+        self.rect.center = (player_rect.centerx, player_rect.centery)
 
 
 class Wall(pygame.sprite.Sprite):
@@ -30,11 +52,6 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
-    def move_check(self):
-        if (not pygame.sprite.spritecollideany(player, tiles_group) or
-                pygame.sprite.spritecollideany(player, tiles_group)):
-            return False
-
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, speed=0.1):
@@ -42,6 +59,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = tile_images['enemy']
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
         self.speed = speed
+        self.hp = 3
 
     def move_towards_player(self, player_rect):
         dx = player_rect.x - self.rect.x
@@ -57,6 +75,11 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = new_x
         self.rect.y = new_y
 
+    def take_hit(self):
+        self.hp -= 1
+        if self.hp <= 0:
+            self.kill()
+
 
 class Camera:
     def __init__(self):
@@ -70,15 +93,6 @@ class Camera:
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
 
 
 def load_level(filename):
@@ -178,19 +192,7 @@ def smooth_player_move_up():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        update()
 
 
 def smooth_player_move_down():
@@ -202,19 +204,7 @@ def smooth_player_move_down():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        update()
 
 
 def smooth_player_move_left():
@@ -229,19 +219,7 @@ def smooth_player_move_left():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
-
-        for sprite in all_sprites:
-            camera.apply(sprite)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        update()
 
 
 def smooth_player_move_right():
@@ -256,19 +234,26 @@ def smooth_player_move_right():
             if event.type == pygame.QUIT:
                 terminate()
 
-        screen.fill((0, 0, 255))
-        tiles_group.draw(screen)
-        walls_group.draw(screen)
-        portals_group.draw(screen)
-        player_group.draw(screen)
-        enemy_group.draw(screen)
-        camera.update(player)
+        update()
 
-        for sprite in all_sprites:
-            camera.apply(sprite)
 
-        pygame.display.flip()
-        clock.tick(FPS)
+def update():
+    screen.fill((0, 0, 255))
+    tiles_group.draw(screen)
+    walls_group.draw(screen)
+    portals_group.draw(screen)
+    player_group.draw(screen)
+    enemy_group.draw(screen)
+    bomb.update_position(player.rect)
+    bomb_group.draw(screen)
+    bomb_group.update()
+    camera.update(player)
+
+    for sprite in all_sprites:
+        camera.apply(sprite)
+
+    pygame.display.flip()
+    clock.tick(FPS)
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
@@ -330,18 +315,32 @@ base = load_level(maps[gamelevel][0])
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
+
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
+
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
+bomb = Bomb(player.rect)
+bomb_group = pygame.sprite.Group()
+bomb_group.add(bomb)
 state = 1
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # Check if the click position is within the bomb's zone
+            if bomb.rect.collidepoint(event.pos):
+                # Check for collision between enemies and the bomb
+                enemy_hit = pygame.sprite.spritecollideany(bomb, enemy_group)
+                if enemy_hit:
+                    # Register a hit on the enemy
+                    enemy_hit.take_hit()
+
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
@@ -381,10 +380,14 @@ while True:
         portals_group.draw(screen)
         player_group.draw(screen)
         enemy_group.draw(screen)
+        bomb.update_position(player.rect)
+        bomb_group.draw(screen)
+        bomb_group.update()
         camera.update(player)
 
         for sprite in all_sprites:
             camera.apply(sprite)
+
     else:
         if pause():
             state = 1
