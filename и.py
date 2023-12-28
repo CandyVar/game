@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-
+import sqlite3
 import pygame
 
 
@@ -227,6 +227,38 @@ def game_over():
         clock.tick(FPS)
 
 
+def add_data(g, m, h, n):
+    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives)'
+                f' VALUES ("{g}", {m}, {h}, {n})')
+    con.commit()
+
+
+def ask_player():
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    cont = Button(150, 180, (0, 0, 255), 'Continue playing')
+    again = Button(150, 280, (0, 0, 255), 'Start from the beginning')
+    cont.draw()
+    again.draw()
+    font = pygame.font.Font(None, 30)
+    text = font.render("Вы уже играли в данную игру", True, (0, 0, 0))
+    screen.blit(text, (100, 50))
+    while True:
+        global DAMAGE
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if cont.x < pos[0] < cont.x + cont.width and cont.y < pos[1] < cont.y + cont.height:
+                    return 1
+                elif again.x < pos[0] < again.x + again.width and again.y < pos[1] < again.y + again.height:
+                    return 0
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -398,6 +430,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
     player.life = LIFE
+    add_data(gamelevel, maplevel, player.hp, player.life)
 
     pygame.time.delay(1000)
 
@@ -407,6 +440,18 @@ maps = {
     'normal': ['map.txt', 'map2.txt'],
     'hard': ['map.txt', 'map2.txt']
 }
+
+con = sqlite3.connect('Game_db.sqlite')
+cur = con.cursor()
+cur.execute('''
+        CREATE TABLE IF NOT EXISTS info (
+        id INTEGER PRIMARY KEY,
+        gamelevel TEXT NOT NULL,
+        maplevel INTEGER NOT NULL,
+        health INTEGER NOT NULL,
+        num_lives INTEGER NOT NULL)
+        ''')
+
 game_level = 'easy'
 maplevel = 0
 pygame.init()
@@ -418,7 +463,6 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((0, 0, 255))
 start_screen()
-gamelevel = show_menu()
 STEP = 50
 
 tile_images = {
@@ -429,7 +473,6 @@ tile_images = {
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 
-base = load_level(maps[gamelevel][0])
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
@@ -440,7 +483,20 @@ enemy_group = pygame.sprite.Group()
 
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
-player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
+last = cur.execute(f'SELECT * FROM info'
+                   f' WHERE id=(SELECT max(id) FROM info)').fetchall()
+flag = 0 if not last else ask_player()
+if last and flag:
+    gamelevel = last[0][1]
+    maplevel = last[0][2]
+    base = load_level(maps[gamelevel][maplevel])
+    player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
+    player.hp = last[0][3]
+    player.life = last[0][4]
+else:
+    gamelevel = show_menu()
+    base = load_level(maps[gamelevel][0])
+    player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
 range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
