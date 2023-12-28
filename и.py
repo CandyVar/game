@@ -213,16 +213,12 @@ def pause():
 def game_over():
     fon = pygame.transform.scale(load_image('gameover.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    again = Button(150, 400, (214, 19, 15), 'Начать заново')
-    again.draw()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                if again.x < pos[0] < again.x + again.width and again.y < pos[1] < again.y + again.height:
-                    show_menu()
+            else:
+                return
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -501,8 +497,8 @@ range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
 state = 1
-
-while True:
+running = True
+while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
@@ -565,8 +561,9 @@ while True:
         draw_player_health()
         LIFE = player.life
 
-        if player.hp == 0:
+        if player.hp == 0 and player.life == 1:
             game_over()
+            terminate()
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
                 enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
