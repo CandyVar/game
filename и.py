@@ -1,8 +1,18 @@
 import os
+import random
 import sys
 import time
 import sqlite3
 import pygame
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
 
 
 class Button:
@@ -19,6 +29,37 @@ class Button:
             text = font.render(self.text, 1, (255, 255, 255))
             screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
                                self.y + (self.height / 2 - text.get_height() / 2)))
+
+
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+    fire = [load_image("hit_p.png")]
+    for scale in (5, 10, 20):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(particles, all_sprites)
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = GRAVITY
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -92,6 +133,25 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = new_y
 
 
+class Sword(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(sword, all_sprites)
+        self.image = load_image('sword1.png')
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.rect.y -= 20
+        self.y = self.rect.y
+        self.gravity = 0.5
+        self.velocity = [0, 0]
+
+    def update(self):
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+
+        if not self.rect.colliderect(screen_rect) or abs(self.y - self.rect.y) >= 75:
+            self.kill()
+
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, speed=0.1):
         super().__init__(enemy_group, all_sprites)
@@ -118,6 +178,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hp -= 1
         if self.hp <= 0:
             self.kill()
+        Sword(self.rect.x / tile_width, self.rect.y / tile_height)
 
 
 class Camera:
@@ -134,15 +195,6 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
-
-
 def load_level(filename):
     filename = "data/" + filename
     with open(filename, 'r') as mapFile:
@@ -150,6 +202,15 @@ def load_level(filename):
 
     max_width = max(map(len, level_map))
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+def create_particles(position):
+    particles.empty()
+    particle_count = 10
+    # возможные скорости
+    numbers = range(-5, 5)
+    for _ in range(particle_count):
+        Particle(position, random.choice(numbers), random.choice(numbers))
 
 
 def terminate():
@@ -213,16 +274,12 @@ def pause():
 def game_over():
     fon = pygame.transform.scale(load_image('gameover.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    again = Button(150, 400, (214, 19, 15), 'Начать заново')
-    again.draw()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                if again.x < pos[0] < again.x + again.width and again.y < pos[1] < again.y + again.height:
-                    show_menu()
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                return
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -328,12 +385,14 @@ def draw_player_health():
 
 
 def animation_update():
+    particles.update()
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
     walls_group.draw(screen)
     portals_group.draw(screen)
     player_group.draw(screen)
     enemy_group.draw(screen)
+    particles.draw(screen)
     range_a.update_position(player.rect)
     range_group.draw(screen)
     range_group.update()
@@ -418,6 +477,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
         pygame.display.flip()
         pygame.time.delay(fade_step_duration)
         clock.tick(60)
+
     base = load_level(new_map_filename)
     tile_width = tile_height = 50
     camera = Camera()
@@ -429,8 +489,11 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
-    player.life = LIFE
-    add_data(gamelevel, maplevel, player.hp, player.life)
+
+    last = cur.execute(f'SELECT * FROM info'
+                       f' WHERE id=(SELECT max(id) FROM info)').fetchall()
+    player.life = last[0][4]
+    player.hp = last[0][3]
 
     pygame.time.delay(1000)
 
@@ -452,15 +515,15 @@ cur.execute('''
         num_lives INTEGER NOT NULL)
         ''')
 
-game_level = 'easy'
-maplevel = 0
 pygame.init()
 FPS = 50
 DAMAGE = 20
 LIFE = 1
+GRAVITY = 0
 WIDTH, HEIGHT = 500, 500
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen_rect = (0, 0, WIDTH, HEIGHT)
 screen.fill((0, 0, 255))
 start_screen()
 STEP = 50
@@ -476,11 +539,11 @@ player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
-
+particles = pygame.sprite.Group()
+sword = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 last = cur.execute(f'SELECT * FROM info'
@@ -495,6 +558,7 @@ if last and flag:
     player.life = last[0][4]
 else:
     gamelevel = show_menu()
+    maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
 range_a = Range(player.rect)
@@ -505,6 +569,7 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            add_data(gamelevel, maplevel, player.hp, player.life)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
@@ -512,7 +577,7 @@ while True:
                 # Check for collision between enemies and the bomb
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
                 if enemy_hit:
-                    # Register a hit on the enemy
+                    create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
 
         elif event.type == pygame.KEYDOWN:
@@ -538,6 +603,7 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
+                        add_data(gamelevel, maplevel, player.hp, player.life)
                         maplevel += 1
                         fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         continue
@@ -548,12 +614,16 @@ while True:
         for enemy in enemy_group:
             enemy.move_towards_player(player.rect)
 
+        particles.update()
+        sword.update()
         screen.fill((0, 0, 255))
         tiles_group.draw(screen)
         walls_group.draw(screen)
         portals_group.draw(screen)
         player_group.draw(screen)
         enemy_group.draw(screen)
+        particles.draw(screen)
+        sword.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
@@ -565,7 +635,7 @@ while True:
         draw_player_health()
         LIFE = player.life
 
-        if player.hp == 0:
+        if player.hp == 0 and player.life == 1:
             game_over()
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
