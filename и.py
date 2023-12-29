@@ -18,7 +18,16 @@ class Button:
             font = pygame.font.SysFont(None, 20)
             text = font.render(self.text, 1, (255, 255, 255))
             screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
-                               self.y + (self.height / 2 - text.get_height() / 2)))
+                               self.y + (self.height/2 - text.get_height() / 2)))
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
 
 
 class Tile(pygame.sprite.Sprite):
@@ -134,15 +143,6 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
-
-
 def load_level(filename):
     filename = "data/" + filename
     with open(filename, 'r') as mapFile:
@@ -188,6 +188,11 @@ def show_menu():
 
         pygame.display.flip()
         clock.tick(FPS)
+
+
+def add_data(diff, lev, hp, life):
+    cur.execute(f'INSERT INTO info VALUES ({diff}, {lev}, {hp}, {life})')
+    con.commit()
 
 
 def pause():
@@ -459,6 +464,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((0, 0, 255))
 start_screen()
+gamelevel = show_menu()
 STEP = 50
 
 tile_images = {
@@ -469,14 +475,13 @@ tile_images = {
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 
+base = load_level(maps[gamelevel][0])
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
-
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
 last = cur.execute(f'SELECT * FROM info'
@@ -497,8 +502,8 @@ range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
 state = 1
-running = True
-while running:
+
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
