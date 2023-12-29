@@ -1,8 +1,18 @@
 import os
+import random
 import sys
 import time
 import sqlite3
 import pygame
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
 
 
 class Button:
@@ -18,16 +28,38 @@ class Button:
             font = pygame.font.SysFont(None, 20)
             text = font.render(self.text, 1, (255, 255, 255))
             screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
-                               self.y + (self.height/2 - text.get_height() / 2)))
+                               self.y + (self.height / 2 - text.get_height() / 2)))
 
 
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+    fire = [load_image("hit_p.png")]
+    for scale in (5, 10, 20):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(particles, all_sprites)
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = GRAVITY
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -150,6 +182,15 @@ def load_level(filename):
 
     max_width = max(map(len, level_map))
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+def create_particles(position):
+    particles.empty()
+    particle_count = 10
+    # возможные скорости
+    numbers = range(-5, 5)
+    for _ in range(particle_count):
+        Particle(position, random.choice(numbers), random.choice(numbers))
 
 
 def terminate():
@@ -324,12 +365,14 @@ def draw_player_health():
 
 
 def animation_update():
+    particles.update()
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
     walls_group.draw(screen)
     portals_group.draw(screen)
     player_group.draw(screen)
     enemy_group.draw(screen)
+    particles.draw(screen)
     range_a.update_position(player.rect)
     range_group.draw(screen)
     range_group.update()
@@ -456,9 +499,11 @@ pygame.init()
 FPS = 50
 DAMAGE = 20
 LIFE = 1
+GRAVITY = 0
 WIDTH, HEIGHT = 500, 500
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen_rect = (0, 0, WIDTH, HEIGHT)
 screen.fill((0, 0, 255))
 start_screen()
 STEP = 50
@@ -474,6 +519,7 @@ player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
+particles = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
@@ -510,7 +556,7 @@ while True:
                 # Check for collision between enemies and the bomb
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
                 if enemy_hit:
-                    # Register a hit on the enemy
+                    create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
 
         elif event.type == pygame.KEYDOWN:
@@ -547,12 +593,14 @@ while True:
         for enemy in enemy_group:
             enemy.move_towards_player(player.rect)
 
+        particles.update()
         screen.fill((0, 0, 255))
         tiles_group.draw(screen)
         walls_group.draw(screen)
         portals_group.draw(screen)
         player_group.draw(screen)
         enemy_group.draw(screen)
+        particles.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
