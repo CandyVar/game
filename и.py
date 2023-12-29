@@ -136,7 +136,7 @@ class Player(pygame.sprite.Sprite):
 class Sword(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(sword, all_sprites)
-        self.image = load_image('sword1.png')  # Replace 'sword.png' with your sword image filename
+        self.image = load_image('sword1.png')
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
         self.rect.y -= 20
         self.y = self.rect.y
