@@ -190,11 +190,6 @@ def show_menu():
         clock.tick(FPS)
 
 
-def add_data(diff, lev, hp, life):
-    cur.execute(f'INSERT INTO info VALUES ({diff}, {lev}, {hp}, {life})')
-    con.commit()
-
-
 def pause():
     while True:
         for ev in pygame.event.get():
@@ -222,7 +217,7 @@ def game_over():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            else:
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
                 return
         pygame.display.flip()
         clock.tick(FPS)
@@ -419,6 +414,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
         pygame.display.flip()
         pygame.time.delay(fade_step_duration)
         clock.tick(60)
+
     base = load_level(new_map_filename)
     tile_width = tile_height = 50
     camera = Camera()
@@ -430,8 +426,11 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
-    player.life = LIFE
-    add_data(gamelevel, maplevel, player.hp, player.life)
+
+    last = cur.execute(f'SELECT * FROM info'
+                       f' WHERE id=(SELECT max(id) FROM info)').fetchall()
+    player.life = last[0][4]
+    player.hp = last[0][3]
 
     pygame.time.delay(1000)
 
@@ -453,8 +452,6 @@ cur.execute('''
         num_lives INTEGER NOT NULL)
         ''')
 
-game_level = 'easy'
-maplevel = 0
 pygame.init()
 FPS = 50
 DAMAGE = 20
@@ -464,7 +461,6 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((0, 0, 255))
 start_screen()
-gamelevel = show_menu()
 STEP = 50
 
 tile_images = {
@@ -475,7 +471,6 @@ tile_images = {
 }
 player_image = pygame.transform.scale(load_image('1.png'), (50, 50))
 
-base = load_level(maps[gamelevel][0])
 tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
@@ -496,6 +491,7 @@ if last and flag:
     player.life = last[0][4]
 else:
     gamelevel = show_menu()
+    maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
 range_a = Range(player.rect)
@@ -506,6 +502,7 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            add_data(gamelevel, maplevel, player.hp, player.life)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
@@ -539,6 +536,7 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
+                        add_data(gamelevel, maplevel, player.hp, player.life)
                         maplevel += 1
                         fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         continue
@@ -568,7 +566,6 @@ while True:
 
         if player.hp == 0 and player.life == 1:
             game_over()
-            terminate()
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
                 enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
