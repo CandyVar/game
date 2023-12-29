@@ -133,6 +133,25 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = new_y
 
 
+class Sword(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(sword, all_sprites)
+        self.image = load_image('sword1.png')  # Replace 'sword.png' with your sword image filename
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.rect.y -= 20
+        self.y = self.rect.y
+        self.gravity = 0.5
+        self.velocity = [0, 0]
+
+    def update(self):
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+
+        if not self.rect.colliderect(screen_rect) or abs(self.y - self.rect.y) >= 75:
+            self.kill()
+
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, speed=0.1):
         super().__init__(enemy_group, all_sprites)
@@ -159,6 +178,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hp -= 1
         if self.hp <= 0:
             self.kill()
+        Sword(self.rect.x / tile_width, self.rect.y / tile_height)
 
 
 class Camera:
@@ -520,6 +540,7 @@ tile_width = tile_height = 50
 camera = Camera()
 all_sprites = pygame.sprite.Group()
 particles = pygame.sprite.Group()
+sword = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
@@ -594,6 +615,7 @@ while True:
             enemy.move_towards_player(player.rect)
 
         particles.update()
+        sword.update()
         screen.fill((0, 0, 255))
         tiles_group.draw(screen)
         walls_group.draw(screen)
@@ -601,6 +623,7 @@ while True:
         player_group.draw(screen)
         enemy_group.draw(screen)
         particles.draw(screen)
+        sword.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
