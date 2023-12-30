@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменила продолжение игры и добавление в бд">
-      <change afterPath="$PROJECT_DIR$/data/drink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/torch.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/treasure.png" afterDir="false" />
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ нефункциональные предметы">
+      <change afterPath="$PROJECT_DIR$/data/forest.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/map.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/map.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -186,7 +183,14 @@
       <option name="project" value="LOCAL" />
       <updated>1703843539293</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="+ нефункциональные предметы">
+      <created>1703947080753</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1703947080753</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -262,6 +266,7 @@
     <MESSAGE value="возможность продолжить игру после выхода" />
     <MESSAGE value="изменение функции game over" />
     <MESSAGE value="изменила продолжение игры и добавление в бд" />
-    <option name="LAST_COMMIT_MESSAGE" value="изменила продолжение игры и добавление в бд" />
+    <MESSAGE value="+ нефункциональные предметы" />
+    <option name="LAST_COMMIT_MESSAGE" value="+ нефункциональные предметы" />
   </component>
 </project>

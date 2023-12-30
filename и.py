@@ -228,16 +228,16 @@ def terminate():
 
 
 def show_menu():
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    easy = Button(150, 180, (0, 0, 255), 'Easy')
-    normal = Button(150, 280, (0, 0, 255), 'Normal')
-    hard = Button(150, 380, (0, 0, 255), 'Hard')
+    easy = Button(150, 180, (23, 38, 29), 'Easy')
+    normal = Button(150, 280, (23, 38, 29), 'Normal')
+    hard = Button(150, 380, (23, 38, 29), 'Hard')
     easy.draw()
     normal.draw()
     hard.draw()
     font = pygame.font.Font(None, 30)
-    text = font.render("Выберите уровень сложности", True, (0, 0, 0))
+    text = font.render("Выберите уровень сложности", True, (255, 255, 255))
     screen.blit(text, (100, 50))
     while True:
         global DAMAGE
@@ -281,8 +281,10 @@ def pause():
 
 
 def game_over():
+    global collection
     fon = pygame.transform.scale(load_image('gameover.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
+    collection = 0
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -293,21 +295,21 @@ def game_over():
         clock.tick(FPS)
 
 
-def add_data(g, m, h, n):
-    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives)'
-                f' VALUES ("{g}", {m}, {h}, {n})')
+def add_data(g, m, h, n, col):
+    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection)'
+                f' VALUES ("{g}", {m}, {h}, {n}, {col})')
     con.commit()
 
 
 def ask_player():
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    cont = Button(150, 180, (0, 0, 255), 'Continue playing')
-    again = Button(150, 280, (0, 0, 255), 'Start from the beginning')
+    cont = Button(150, 180, (23, 38, 29), 'Continue playing')
+    again = Button(150, 280, (23, 38, 29), 'Start from the beginning')
     cont.draw()
     again.draw()
     font = pygame.font.Font(None, 30)
-    text = font.render("Вы уже играли в данную игру", True, (0, 0, 0))
+    text = font.render("Вы уже играли в данную игру", True, (255, 255, 255))
     screen.blit(text, (100, 50))
     while True:
         global DAMAGE
@@ -360,12 +362,12 @@ def start_screen():
                   "Убегая от врагов (призраков) и ",
                   "И не потратив все свои жизни и здоровье."]
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 70
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
+        string_rendered = font.render(line, 1, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -539,7 +541,8 @@ cur.execute('''
         gamelevel TEXT NOT NULL,
         maplevel INTEGER NOT NULL,
         health INTEGER NOT NULL,
-        num_lives INTEGER NOT NULL)
+        num_lives INTEGER NOT NULL,
+        collection INTEGER NOT NULL)
         ''')
 
 pygame.init()
@@ -585,13 +588,13 @@ if last and flag:
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
     player.hp = last[0][3]
     player.life = last[0][4]
+    collection = last[0][5]
 else:
     gamelevel = show_menu()
     maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
-
-collection = 0
+    collection = 0
 range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
@@ -600,7 +603,7 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            add_data(gamelevel, maplevel, player.hp, player.life)
+            add_data(gamelevel, maplevel, player.hp, player.life, collection)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
@@ -635,7 +638,7 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection)
                         maplevel += 1
                         fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         continue
