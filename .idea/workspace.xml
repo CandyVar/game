@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ меню после заставки">
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменила продолжение игры и добавление в бд">
+      <change afterPath="$PROJECT_DIR$/data/drink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/torch.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/treasure.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/map.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/map.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -27,6 +31,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -44,6 +49,9 @@
         <option name="url" value="https://github.com/CandyVar/game" />
       </UrlAndAccount>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="vcs://C:/Users/vlc55/PycharmProjects/3dtodecember/game/и.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -67,6 +75,11 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\vlc55\PycharmProjects\3dtodecember\game\data" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="и" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="game" />
@@ -91,6 +104,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
         <item itemvalue="Python.и" />
       </list>
     </recent_temporary>
@@ -134,7 +151,42 @@
       <option name="project" value="LOCAL" />
       <updated>1703452069689</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="окно game over после смерти">
+      <created>1703711630392</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1703711630392</updated>
+    </task>
+    <task id="LOCAL-00006" summary="возможность продолжить игру после выхода">
+      <created>1703773117741</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1703773117741</updated>
+    </task>
+    <task id="LOCAL-00007" summary="возможность продолжить игру после выхода">
+      <created>1703773204202</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703773204202</updated>
+    </task>
+    <task id="LOCAL-00008" summary="изменение функции game over">
+      <created>1703781962820</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1703781962820</updated>
+    </task>
+    <task id="LOCAL-00009" summary="изменила продолжение игры и добавление в бд">
+      <created>1703843539293</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1703843539293</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -153,7 +205,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/vix" />
+                        <option value="vix" />
                       </list>
                     </value>
                   </entry>
@@ -170,7 +222,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/код" />
+                        <option value="vix" />
                       </list>
                     </value>
                   </entry>
@@ -181,9 +233,24 @@
         </entry>
       </map>
     </option>
-    <option name="OPEN_GENERIC_TABS">
+    <option name="RECENT_FILTERS">
       <map>
-        <entry key="41d44fa1-9f6d-431d-904e-86b1e35ab437" value="TOOL_WINDOW" />
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="vix" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="main" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
@@ -191,6 +258,10 @@
     <MESSAGE value="data" />
     <MESSAGE value="примерный вид базы данных" />
     <MESSAGE value="+ меню после заставки" />
-    <option name="LAST_COMMIT_MESSAGE" value="+ меню после заставки" />
+    <MESSAGE value="окно game over после смерти" />
+    <MESSAGE value="возможность продолжить игру после выхода" />
+    <MESSAGE value="изменение функции game over" />
+    <MESSAGE value="изменила продолжение игры и добавление в бд" />
+    <option name="LAST_COMMIT_MESSAGE" value="изменила продолжение игры и добавление в бд" />
   </component>
 </project>

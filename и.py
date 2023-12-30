@@ -152,6 +152,15 @@ class Sword(pygame.sprite.Sprite):
             self.kill()
 
 
+class Goods(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(equip_group, all_sprites)
+        image_names = ['treasure.png', 'drink.png', 'torch.png']
+        random_type = random.randint(0, len(image_names))
+        self.image = pygame.transform.scale(load_image(image_names[random_type]), (50, 50))
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, speed=0.1):
         super().__init__(enemy_group, all_sprites)
@@ -332,6 +341,9 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y)
+            elif level[y][x] == '*':
+                Tile('empty', x, y)
+                Goods(x, y)
 
     return new_player, x, y
 
@@ -384,11 +396,25 @@ def draw_player_health():
     screen.blit(text, text_rect)
 
 
+def draw_collection():
+    font = pygame.font.Font(None, 30)
+    text = font.render(f'Collection: {collection}', True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.topleft = (0, 10)
+
+    # Отрисовка белой рамки
+    pygame.draw.rect(screen, (255, 255, 255), (0, 5, 150, 35), 2)
+
+    # Отрисовка текста
+    screen.blit(text, text_rect)
+
+
 def animation_update():
     particles.update()
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
     walls_group.draw(screen)
+    equip_group.draw(screen)
     portals_group.draw(screen)
     player_group.draw(screen)
     enemy_group.draw(screen)
@@ -402,6 +428,7 @@ def animation_update():
         camera.apply(sprite)
 
     draw_player_health()
+    draw_collection()
 
     pygame.display.flip()
     clock.tick(FPS)
@@ -541,11 +568,13 @@ camera = Camera()
 all_sprites = pygame.sprite.Group()
 particles = pygame.sprite.Group()
 sword = pygame.sprite.Group()
+equip_group = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
+
 last = cur.execute(f'SELECT * FROM info'
                    f' WHERE id=(SELECT max(id) FROM info)').fetchall()
 flag = 0 if not last else ask_player()
@@ -561,6 +590,8 @@ else:
     maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
+
+collection = 0
 range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
@@ -584,7 +615,8 @@ while True:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
                 if move_check() == 'wb':
-                    if pygame.sprite.spritecollideany(player, portals_group):
+                    if pygame.sprite.spritecollideany(player, portals_group) or\
+                            pygame.sprite.spritecollideany(player, equip_group):
                         continue
                     smooth_player_move_right()
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
@@ -624,6 +656,7 @@ while True:
         enemy_group.draw(screen)
         particles.draw(screen)
         sword.draw(screen)
+        equip_group.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
@@ -633,10 +666,15 @@ while True:
             camera.apply(sprite)
 
         draw_player_health()
+        draw_collection()
         LIFE = player.life
 
         if player.hp == 0 and player.life == 1:
             game_over()
+        for thing in equip_group:
+            if pygame.sprite.collide_rect(player, thing):
+                collection += 1
+                thing.kill()
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
                 enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
