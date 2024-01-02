@@ -102,6 +102,7 @@ class Player(pygame.sprite.Sprite):
         self.life = LIFE
         self.recoil_distance = 50
         self.last_damage_time = 0
+        self.has_weapon = False
         super().__init__(player_group, all_sprites)
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
@@ -134,10 +135,12 @@ class Player(pygame.sprite.Sprite):
 
 
 class Sword(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, f=0):
         super().__init__(sword, all_sprites)
-        self.image = load_image('sword1.png')
+        types = ['sword1.png', 'sword2.png', 'sword3.png']
+        self.image = pygame.transform.scale(load_image(types[f]), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.force = 1
         self.rect.y -= 20
         self.y = self.rect.y
         self.gravity = 0.5
@@ -156,8 +159,15 @@ class Goods(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(equip_group, all_sprites)
         image_names = ['treasure.png', 'drink.png', 'torch.png']
-        random_type = random.randint(0, len(image_names))
+        random_type = random.randint(0, len(image_names) - 1)
         self.image = pygame.transform.scale(load_image(image_names[random_type]), (50, 50))
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+
+class SimpleSword(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(sword_group, all_sprites)
+        self.image = pygame.transform.scale(load_image('sword1.png'), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
@@ -184,10 +194,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = new_y
 
     def take_hit(self):
-        self.hp -= 1
+        self.hp -= sum_force
         if self.hp <= 0:
             self.kill()
-        Sword(self.rect.x / tile_width, self.rect.y / tile_height)
+        Sword(self.rect.x / tile_width, self.rect.y / tile_height, f=sum_force)
 
 
 class Camera:
@@ -241,10 +251,10 @@ def show_menu():
     screen.blit(text, (100, 50))
     while True:
         global DAMAGE
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
                     DAMAGE = 5
@@ -286,18 +296,18 @@ def game_over():
     screen.blit(fon, (0, 0))
     collection = 0
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+            if ev.type == pygame.MOUSEBUTTONDOWN or ev.type == pygame.KEYDOWN:
                 return
         pygame.display.flip()
         clock.tick(FPS)
 
 
-def add_data(g, m, h, n, col):
-    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection)'
-                f' VALUES ("{g}", {m}, {h}, {n}, {col})')
+def add_data(g, m, h, n, col, f):
+    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection, force)'
+                f' VALUES ("{g}", {m}, {h}, {n}, {col}, {f})')
     con.commit()
 
 
@@ -313,10 +323,10 @@ def ask_player():
     screen.blit(text, (100, 50))
     while True:
         global DAMAGE
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if cont.x < pos[0] < cont.x + cont.width and cont.y < pos[1] < cont.y + cont.height:
                     return 1
@@ -343,9 +353,16 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y)
-            elif level[y][x] == '*':
-                Tile('empty', x, y)
-                Goods(x, y)
+    # добавление оружия на карту
+    x1, y1 = 1, 3
+    # x1, y1 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
+    if level[y1][x1] == '.':
+        Tile('empty', x1, y1)
+        SimpleSword(x1, y1)
+    for i in range(0, random.randint(0, 3)):
+        x2, y2 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
+        if level[y2][x2] == '.':
+            Goods(x2, y2)
 
     return new_player, x, y
 
@@ -376,36 +393,36 @@ def start_screen():
         screen.blit(string_rendered, intro_rect)
 
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.KEYDOWN or ev.type == pygame.MOUSEBUTTONDOWN:
                 return
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def draw_player_health():
-    font = pygame.font.Font(None, 30)  # Выберите шрифт и размер шрифта по вашему вкусу
+    font = pygame.font.Font(None, 22)  # Выберите шрифт и размер шрифта по вашему вкусу
     text = font.render(f'Player HP: {player.hp} | Life: {player.life}', True, (255, 255, 255))
     text_rect = text.get_rect()
     text_rect.topright = (WIDTH - 10, 10)
 
     # Отрисовка белой рамки
-    pygame.draw.rect(screen, (255, 255, 255), (WIDTH - 245, 5, 240, 35), 2)
+    pygame.draw.rect(screen, (255, 255, 255), (320, 5, 180, 35), 2)
 
     # Отрисовка текста
     screen.blit(text, text_rect)
 
 
 def draw_collection():
-    font = pygame.font.Font(None, 30)
-    text = font.render(f'Collection: {collection}', True, (255, 255, 255))
+    font = pygame.font.Font(None, 22)
+    text = font.render(f' Collection: {collection} | Weapon: {player.has_weapon}', True, (255, 255, 255))
     text_rect = text.get_rect()
     text_rect.topleft = (0, 10)
 
     # Отрисовка белой рамки
-    pygame.draw.rect(screen, (255, 255, 255), (0, 5, 150, 35), 2)
+    pygame.draw.rect(screen, (255, 255, 255), (0, 5, 220, 35), 2)
 
     # Отрисовка текста
     screen.blit(text, text_rect)
@@ -413,6 +430,7 @@ def draw_collection():
 
 def animation_update():
     particles.update()
+    sword.update()
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
     walls_group.draw(screen)
@@ -421,6 +439,8 @@ def animation_update():
     player_group.draw(screen)
     enemy_group.draw(screen)
     particles.draw(screen)
+    sword.draw(screen)
+    sword_group.draw(screen)
     range_a.update_position(player.rect)
     range_group.draw(screen)
     range_group.update()
@@ -441,8 +461,8 @@ def smooth_player_move_up():
         player.image = pygame.transform.scale(load_image('2.png'), (50, 50))
         player.rect.y -= STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
@@ -453,8 +473,8 @@ def smooth_player_move_down():
         player.image = pygame.transform.scale(load_image('1.png'), (50, 50))
         player.rect.y += STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
@@ -483,8 +503,8 @@ def smooth_player_move_right():
             player.image = pygame.transform.scale(load_image('r2.png'), (50, 50))
         player.rect.x += STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
@@ -542,7 +562,8 @@ cur.execute('''
         maplevel INTEGER NOT NULL,
         health INTEGER NOT NULL,
         num_lives INTEGER NOT NULL,
-        collection INTEGER NOT NULL)
+        collection INTEGER NOT NULL,
+        force INTEGER NOT NULL)
         ''')
 
 pygame.init()
@@ -571,6 +592,7 @@ camera = Camera()
 all_sprites = pygame.sprite.Group()
 particles = pygame.sprite.Group()
 sword = pygame.sprite.Group()
+sword_group = pygame.sprite.Group()
 equip_group = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
@@ -589,12 +611,14 @@ if last and flag:
     player.hp = last[0][3]
     player.life = last[0][4]
     collection = last[0][5]
+    sum_force = last[0][6]
 else:
     gamelevel = show_menu()
     maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
     collection = 0
+    sum_force = 0
 range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
@@ -603,22 +627,22 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            add_data(gamelevel, maplevel, player.hp, player.life, collection)
+            add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
             if range_a.rect.collidepoint(event.pos):
                 # Check for collision between enemies and the bomb
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
-                if enemy_hit:
+                if enemy_hit and player.has_weapon:
                     create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
-
+                    player.has_weapon = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
                 if move_check() == 'wb':
-                    if pygame.sprite.spritecollideany(player, portals_group) or\
+                    if pygame.sprite.spritecollideany(player, portals_group) or \
                             pygame.sprite.spritecollideany(player, equip_group):
                         continue
                     smooth_player_move_right()
@@ -638,7 +662,7 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life, collection)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
                         maplevel += 1
                         fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         continue
@@ -648,7 +672,6 @@ while True:
     if state:
         for enemy in enemy_group:
             enemy.move_towards_player(player.rect)
-
         particles.update()
         sword.update()
         screen.fill((0, 0, 255))
@@ -656,10 +679,11 @@ while True:
         walls_group.draw(screen)
         portals_group.draw(screen)
         player_group.draw(screen)
+        equip_group.draw(screen)
         enemy_group.draw(screen)
         particles.draw(screen)
         sword.draw(screen)
-        equip_group.draw(screen)
+        sword_group.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
@@ -678,12 +702,20 @@ while True:
             if pygame.sprite.collide_rect(player, thing):
                 collection += 1
                 thing.kill()
+        for sw in sword_group:
+            if pygame.sprite.collide_rect(player, sw):
+                player.has_weapon = True
+                sw.kill()
+                sum_force += 1
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
                 enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
                 num_enemies_in_radius = len(enemies_in_radius)
                 total_damage = len(enemies_in_radius) * DAMAGE
                 player.take_hit(total_damage)
+            if player.hp == 0 and player.life == 1:
+                game_over()
+
     else:
         if pause():
             state = 1
