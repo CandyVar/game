@@ -23,6 +23,7 @@ class Button:
         self.text = text
 
     def draw(self):
+        # отрисовка кнопки на экране
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         if self.text:
             font = pygame.font.SysFont(None, 20)
@@ -113,6 +114,8 @@ class Player(pygame.sprite.Sprite):
         elif self.hp <= 0:
             self.life -= 1
             self.hp = 100
+        if self.hp == 0 and self.life == 1:
+            game_over()
 
         current_time = time.time()
         if current_time - self.last_damage_time >= 0.5:
@@ -138,7 +141,13 @@ class Sword(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, f=0):
         super().__init__(sword, all_sprites)
         types = ['sword1.png', 'sword2.png', 'sword3.png']
-        self.image = pygame.transform.scale(load_image(types[f]), (50, 50))
+        # изменение текстуры меча в зависимости от его силы
+        if 1 <= f < 10:
+            self.image = pygame.transform.scale(load_image(types[0]), (50, 50))
+        elif 10 <= f < 20:
+            self.image = pygame.transform.scale(load_image(types[1]), (50, 50))
+        else:
+            self.image = pygame.transform.scale(load_image(types[2]), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
         self.force = 1
         self.rect.y -= 20
@@ -158,9 +167,12 @@ class Sword(pygame.sprite.Sprite):
 class Goods(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(equip_group, all_sprites)
-        image_names = ['treasure.png', 'drink.png', 'torch.png']
-        random_type = random.randint(0, len(image_names) - 1)
-        self.image = pygame.transform.scale(load_image(image_names[random_type]), (50, 50))
+        # случайный выбор текстуры предмета
+        image_names = ['treasure.png', 'drink.png', 'torch.png', 'drink2.png', 'money.png',
+                       'diamond.png', 'blue_stone.png', 'emerald_ball.png', 'green_stone.png',
+                       'red_stone.png', 'white_ball.png', 'white_stone.png']
+        self.random_type = random.randint(0, len(image_names) - 1)
+        self.image = pygame.transform.scale(load_image(image_names[self.random_type]), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
@@ -278,14 +290,17 @@ def pause():
             elif ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_ESCAPE:
                     return 1
+        # создание надписи
         font = pygame.font.Font(None, 50)
         text = font.render("Игра приостановлена", True, (0, 0, 0))
         text_x = WIDTH // 2 - text.get_width() // 2
         text_y = HEIGHT // 2 - text.get_height() // 2
         text_w = text.get_width()
         text_h = text.get_height()
+        # отрисовка белой рамки
         pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
                                                    text_w + 20, text_h + 20), 0)
+        # выведение её на экран
         screen.blit(text, (text_x, text_y))
         pygame.display.flip()
 
@@ -353,16 +368,14 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y)
-    # добавление оружия на карту
-    x1, y1 = 1, 3
-    # x1, y1 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
-    if level[y1][x1] == '.':
-        Tile('empty', x1, y1)
-        SimpleSword(x1, y1)
+            elif level[y][x] == '*':
+                Tile('empty', x, y)
+                SimpleSword(x, y)
+    # генерация рандомного инвентаря
     for i in range(0, random.randint(0, 3)):
-        x2, y2 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
-        if level[y2][x2] == '.':
-            Goods(x2, y2)
+        x1, y1 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
+        if level[y1][x1] == '.':
+            Goods(x1, y1)
 
     return new_player, x, y
 
@@ -377,7 +390,7 @@ def start_screen():
                   "Правила игры",
                   "Игроку нужно добраться до портала,",
                   "Убегая от врагов (призраков) и ",
-                  "И не потратив все свои жизни и здоровье."]
+                  "не потратив все свои жизни и здоровье."]
 
     fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
@@ -417,7 +430,7 @@ def draw_player_health():
 
 def draw_collection():
     font = pygame.font.Font(None, 22)
-    text = font.render(f' Collection: {collection} | Weapon: {player.has_weapon}', True, (255, 255, 255))
+    text = font.render(f' Inventory: {collection} | Weapon: {player.has_weapon}', True, (255, 255, 255))
     text_rect = text.get_rect()
     text_rect.topleft = (0, 10)
 
@@ -508,6 +521,46 @@ def smooth_player_move_right():
                 terminate()
 
         animation_update()
+
+
+def chaos():
+    # карты для последнего уровня
+    base = {
+        'wall': '#',
+        'sword': '*',
+        'none': '.'}
+    lucky = random.randint(-1, 10)
+    n = int(random.randint(3, 40))
+    chaos_base = [[0] * n for _ in range(n)]
+    with (open('data/chaos.txt', 'w') as f):
+        f.write('')
+        while True:
+            if lucky == -1:
+                game_over()
+                break
+            for y in range(n):
+                for x in range(n):
+                    item = base[random.choice(list(base.keys()))]
+                    chaos_base[y][x] = item
+
+            chaos_base[0][0] = '@'
+            chaos_base[n - 1][n - 1] = '!'
+            enemy = random.randint(0, lucky * 2 + 1)
+            replacements = 0
+
+            while replacements < enemy:
+                x, y = random.randint(0, n - 1), random.randint(0, n - 1)
+                if chaos_base[y][x] != '&':
+                    chaos_base[y][x] = '&'
+                    replacements += 1
+
+            chaos_base[0][1] = '.'
+            chaos_base[1][0] = '.'
+            chaos_base[1][1] = '.'
+
+            for row in chaos_base:
+                f.write(''.join(map(str, row)) + '\n')
+            break
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
@@ -606,8 +659,13 @@ flag = 0 if not last else ask_player()
 if last and flag:
     gamelevel = last[0][1]
     maplevel = last[0][2]
-    base = load_level(maps[gamelevel][maplevel])
-    player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
+    try:
+        base = load_level(maps[gamelevel][maplevel])
+        player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
+    except IndexError:
+        chaos()
+        base = load_level('chaos.txt')
+        player, level_x, level_y = generate_level(load_level('chaos.txt'))
     player.hp = last[0][3]
     player.life = last[0][4]
     collection = last[0][5]
@@ -664,7 +722,11 @@ while True:
                     if pygame.sprite.spritecollideany(player, portals_group):
                         add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
                         maplevel += 1
-                        fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        try:
+                            fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        except IndexError:
+                            chaos()
+                            fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
                     smooth_player_move_up()
             elif event.key == pygame.K_ESCAPE:
@@ -698,8 +760,19 @@ while True:
 
         if player.hp == 0 and player.life == 1:
             game_over()
+        # коллекционирование инвентаря, находящегося на карте
         for thing in equip_group:
             if pygame.sprite.collide_rect(player, thing):
+                if thing.random_type == 1:
+                    player.hp += 20
+                    if player.hp > 100:
+                        player.hp %= 100
+                        player.life += 1
+                elif thing.random_type == 3:
+                    player.hp += 25
+                    if player.hp > 100:
+                        player.hp %= 100
+                        player.life += 1
                 collection += 1
                 thing.kill()
         for sw in sword_group:
@@ -713,8 +786,6 @@ while True:
                 num_enemies_in_radius = len(enemies_in_radius)
                 total_damage = len(enemies_in_radius) * DAMAGE
                 player.take_hit(total_damage)
-            if player.hp == 0 and player.life == 1:
-                game_over()
 
     else:
         if pause():
