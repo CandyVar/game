@@ -841,7 +841,7 @@ while True:
                         player.life += 1
                 collection += 1
                 thing.kill()
-                if collection // 10 <= 1:
+                if collection // 10 >= 1:
                     ask_for_exchange()
         for sw in sword_group:
             if pygame.sprite.collide_rect(player, sw):
