@@ -460,8 +460,8 @@ def final_screen():
     start_chaos = Button(150, 180, (255, 204, 0), 'Play bonus level')
     start_chaos.draw()
     font = pygame.font.Font(None, 30)
-    text = font.render("You have successfully completed all the levels", True, (255, 255, 255))
-    screen.blit(text, (100, 50))
+    text = font.render("You have successfully completed all levels", True, (255, 216, 0))
+    screen.blit(text, (25, 50))
     while True:
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
