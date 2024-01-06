@@ -23,6 +23,7 @@ class Button:
         self.text = text
 
     def draw(self):
+        # отрисовка кнопки на экране
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         if self.text:
             font = pygame.font.SysFont(None, 20)
@@ -102,6 +103,7 @@ class Player(pygame.sprite.Sprite):
         self.life = LIFE
         self.recoil_distance = 50
         self.last_damage_time = 0
+        self.has_weapon = False
         super().__init__(player_group, all_sprites)
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
@@ -112,6 +114,8 @@ class Player(pygame.sprite.Sprite):
         elif self.hp <= 0:
             self.life -= 1
             self.hp = 100
+        if self.hp == 0 and self.life == 1:
+            game_over()
 
         current_time = time.time()
         if current_time - self.last_damage_time >= 0.5:
@@ -134,10 +138,18 @@ class Player(pygame.sprite.Sprite):
 
 
 class Sword(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, f=0):
         super().__init__(sword, all_sprites)
-        self.image = load_image('sword1.png')
+        types = ['sword1.png', 'sword2.png', 'sword3.png']
+        # изменение текстуры меча в зависимости от его силы
+        if 1 <= f < 10:
+            self.image = pygame.transform.scale(load_image(types[0]), (50, 50))
+        elif 10 <= f < 20:
+            self.image = pygame.transform.scale(load_image(types[1]), (50, 50))
+        else:
+            self.image = pygame.transform.scale(load_image(types[2]), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.force = 1
         self.rect.y -= 20
         self.y = self.rect.y
         self.gravity = 0.5
@@ -150,6 +162,25 @@ class Sword(pygame.sprite.Sprite):
 
         if not self.rect.colliderect(screen_rect) or abs(self.y - self.rect.y) >= 75:
             self.kill()
+
+
+class Goods(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(equip_group, all_sprites)
+        # случайный выбор текстуры предмета
+        image_names = ['treasure.png', 'drink.png', 'torch.png', 'drink2.png', 'money.png',
+                       'diamond.png', 'blue_stone.png', 'emerald_ball.png', 'green_stone.png',
+                       'red_stone.png', 'white_ball.png', 'white_stone.png']
+        self.random_type = random.randint(0, len(image_names) - 1)
+        self.image = pygame.transform.scale(load_image(image_names[self.random_type]), (50, 50))
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+
+class SimpleSword(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(sword_group, all_sprites)
+        self.image = pygame.transform.scale(load_image('sword1.png'), (50, 50))
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -175,10 +206,20 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = new_y
 
     def take_hit(self):
-        self.hp -= 1
+        global sum_force
+        s = sum_force
+        if 1 <= sum_force < 10:
+            self.hp -= 1
+            sum_force -= 1
+        elif 10 <= sum_force < 20:
+            self.hp -= 2
+            sum_force -= 2
+        elif sum_force <= 20:
+            self.hp -= 3
+            sum_force -= 3
         if self.hp <= 0:
             self.kill()
-        Sword(self.rect.x / tile_width, self.rect.y / tile_height)
+        Sword(self.rect.x / tile_width, self.rect.y / tile_height, f=s)
 
 
 class Camera:
@@ -219,23 +260,23 @@ def terminate():
 
 
 def show_menu():
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    easy = Button(150, 180, (0, 0, 255), 'Easy')
-    normal = Button(150, 280, (0, 0, 255), 'Normal')
-    hard = Button(150, 380, (0, 0, 255), 'Hard')
+    easy = Button(150, 180, (23, 38, 29), 'Easy')
+    normal = Button(150, 280, (23, 38, 29), 'Normal')
+    hard = Button(150, 380, (23, 38, 29), 'Hard')
     easy.draw()
     normal.draw()
     hard.draw()
     font = pygame.font.Font(None, 30)
-    text = font.render("Выберите уровень сложности", True, (0, 0, 0))
+    text = font.render("Выберите уровень сложности", True, (255, 255, 255))
     screen.blit(text, (100, 50))
     while True:
         global DAMAGE
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
                     DAMAGE = 5
@@ -259,59 +300,97 @@ def pause():
             elif ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_ESCAPE:
                     return 1
+        # создание надписи
         font = pygame.font.Font(None, 50)
         text = font.render("Игра приостановлена", True, (0, 0, 0))
         text_x = WIDTH // 2 - text.get_width() // 2
         text_y = HEIGHT // 2 - text.get_height() // 2
         text_w = text.get_width()
         text_h = text.get_height()
+        # отрисовка белой рамки
         pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
                                                    text_w + 20, text_h + 20), 0)
+        # выведение её на экран
         screen.blit(text, (text_x, text_y))
         pygame.display.flip()
 
 
 def game_over():
+    global collection
     fon = pygame.transform.scale(load_image('gameover.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
+    collection = 0
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+            if ev.type == pygame.MOUSEBUTTONDOWN or ev.type == pygame.KEYDOWN:
                 return
         pygame.display.flip()
         clock.tick(FPS)
 
 
-def add_data(g, m, h, n):
-    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives)'
-                f' VALUES ("{g}", {m}, {h}, {n})')
+def add_data(g, m, h, n, col, f):
+    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection, force)'
+                f' VALUES ("{g}", {m}, {h}, {n}, {col}, {f})')
     con.commit()
 
 
 def ask_player():
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    cont = Button(150, 180, (0, 0, 255), 'Continue playing')
-    again = Button(150, 280, (0, 0, 255), 'Start from the beginning')
+    cont = Button(150, 180, (23, 38, 29), 'Continue playing')
+    again = Button(150, 280, (23, 38, 29), 'Start from the beginning')
     cont.draw()
     again.draw()
     font = pygame.font.Font(None, 30)
-    text = font.render("Вы уже играли в данную игру", True, (0, 0, 0))
+    text = font.render("Вы уже играли в данную игру", True, (255, 255, 255))
     screen.blit(text, (100, 50))
     while True:
-        global DAMAGE
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if cont.x < pos[0] < cont.x + cont.width and cont.y < pos[1] < cont.y + cont.height:
                     return 1
                 elif again.x < pos[0] < again.x + again.width and again.y < pos[1] < again.y + again.height:
                     return 0
 
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def ask_for_exchange():
+    global player, collection
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    # создание надписи
+    font = pygame.font.Font(None, 25)
+    text = font.render("Вы можете обменять 10 предметов на 1 жизнь?", True, (0, 0, 0))
+    text_w = text.get_width()
+    text_h = text.get_height()
+    # отрисовка белой рамки
+    pygame.draw.rect(screen, (255, 255, 255), (50, 50,
+                                               text_w + 20, text_h + 20), 0)
+    # выведение её на экран
+    screen.blit(text, (50, 50))
+    ex = Button(150, 180, (23, 38, 29), 'Обменять')
+    ex.draw()
+    ref = Button(150, 280, (23, 38, 29), 'Отказаться')
+    ref.draw()
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if ex.x < pos[0] < ex.x + ex.width and ex.y < pos[1] < ex.y + ex.height:
+                    collection -= 10
+                    player.life += 1
+                    return
+                elif ref.x < pos[0] < ref.x + ref.width and ref.y < pos[1] < ref.y + ref.height:
+                    return
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -332,6 +411,14 @@ def generate_level(level):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y)
+            elif level[y][x] == '*':
+                Tile('empty', x, y)
+                SimpleSword(x, y)
+    # генерация рандомного инвентаря
+    for i in range(0, random.randint(0, 3)):
+        x1, y1 = random.randint(0, len(level) - 1), random.randint(0, len(level) - 1)
+        if level[y1][x1] == '.':
+            Goods(x1, y1)
 
     return new_player, x, y
 
@@ -346,14 +433,14 @@ def start_screen():
                   "Правила игры",
                   "Игроку нужно добраться до портала,",
                   "Убегая от врагов (призраков) и ",
-                  "И не потратив все свои жизни и здоровье."]
+                  "не потратив все свои жизни и здоровье."]
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 70
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
+        string_rendered = font.render(line, 1, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -362,23 +449,58 @@ def start_screen():
         screen.blit(string_rendered, intro_rect)
 
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pygame.KEYDOWN or ev.type == pygame.MOUSEBUTTONDOWN:
                 return
         pygame.display.flip()
         clock.tick(FPS)
 
 
+def final_screen():
+    fon = pygame.transform.scale(load_image('final.png'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    start_chaos = Button(150, 180, (255, 204, 0), 'Play bonus level')
+    start_chaos.draw()
+    font = pygame.font.Font(None, 30)
+    text = font.render("You have successfully completed all levels", True, (255, 216, 0))
+    screen.blit(text, (25, 50))
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                terminate()
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if start_chaos.x < pos[0] < start_chaos.x + start_chaos.width\
+                        and start_chaos.y < pos[1] < start_chaos.y + start_chaos.height:
+                    return 1
+                return 0
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def draw_player_health():
-    font = pygame.font.Font(None, 30)  # Выберите шрифт и размер шрифта по вашему вкусу
+    font = pygame.font.Font(None, 22)  # Выберите шрифт и размер шрифта по вашему вкусу
     text = font.render(f'Player HP: {player.hp} | Life: {player.life}', True, (255, 255, 255))
     text_rect = text.get_rect()
     text_rect.topright = (WIDTH - 10, 10)
 
     # Отрисовка белой рамки
-    pygame.draw.rect(screen, (255, 255, 255), (WIDTH - 245, 5, 240, 35), 2)
+    pygame.draw.rect(screen, (255, 255, 255), (320, 5, 180, 35), 2)
+
+    # Отрисовка текста
+    screen.blit(text, text_rect)
+
+
+def draw_collection():
+    font = pygame.font.Font(None, 22)
+    text = font.render(f' Inventory: {collection} | Weapon: {player.has_weapon}', True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.topleft = (0, 10)
+
+    # Отрисовка белой рамки
+    pygame.draw.rect(screen, (255, 255, 255), (0, 5, 220, 35), 2)
 
     # Отрисовка текста
     screen.blit(text, text_rect)
@@ -386,13 +508,17 @@ def draw_player_health():
 
 def animation_update():
     particles.update()
+    sword.update()
     screen.fill((0, 0, 255))
     tiles_group.draw(screen)
     walls_group.draw(screen)
+    equip_group.draw(screen)
     portals_group.draw(screen)
     player_group.draw(screen)
     enemy_group.draw(screen)
     particles.draw(screen)
+    sword.draw(screen)
+    sword_group.draw(screen)
     range_a.update_position(player.rect)
     range_group.draw(screen)
     range_group.update()
@@ -402,6 +528,7 @@ def animation_update():
         camera.apply(sprite)
 
     draw_player_health()
+    draw_collection()
 
     pygame.display.flip()
     clock.tick(FPS)
@@ -412,8 +539,8 @@ def smooth_player_move_up():
         player.image = pygame.transform.scale(load_image('2.png'), (50, 50))
         player.rect.y -= STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
@@ -424,8 +551,8 @@ def smooth_player_move_down():
         player.image = pygame.transform.scale(load_image('1.png'), (50, 50))
         player.rect.y += STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
@@ -454,11 +581,51 @@ def smooth_player_move_right():
             player.image = pygame.transform.scale(load_image('r2.png'), (50, 50))
         player.rect.x += STEP / 5
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 terminate()
 
         animation_update()
+
+
+def chaos():
+    # карты для последнего уровня
+    base = {
+        'wall': '#',
+        'sword': '*',
+        'none': '.'}
+    lucky = random.randint(-1, 10)
+    n = int(random.randint(3, 40))
+    chaos_base = [[0] * n for _ in range(n)]
+    with (open('data/chaos.txt', 'w') as f):
+        f.write('')
+        while True:
+            if lucky == -1:
+                game_over()
+                break
+            for y in range(n):
+                for x in range(n):
+                    item = base[random.choice(list(base.keys()))]
+                    chaos_base[y][x] = item
+
+            chaos_base[0][0] = '@'
+            chaos_base[n - 1][n - 1] = '!'
+            enemy = random.randint(0, lucky * 2 + 1)
+            replacements = 0
+
+            while replacements < enemy:
+                x, y = random.randint(0, n - 1), random.randint(0, n - 1)
+                if chaos_base[y][x] != '&':
+                    chaos_base[y][x] = '&'
+                    replacements += 1
+
+            chaos_base[0][1] = '.'
+            chaos_base[1][0] = '.'
+            chaos_base[1][1] = '.'
+
+            for row in chaos_base:
+                f.write(''.join(map(str, row)) + '\n')
+            break
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
@@ -486,6 +653,8 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
     player_group = pygame.sprite.Group()
     enemy_group = pygame.sprite.Group()
     walls_group = pygame.sprite.Group()
+    equip_group = pygame.sprite.Group()
+    sword_group = pygame.sprite.Group()
     portals_group = pygame.sprite.Group()
     player, level_x, level_y = generate_level(load_level(new_map_filename))
     state = 1
@@ -512,7 +681,9 @@ cur.execute('''
         gamelevel TEXT NOT NULL,
         maplevel INTEGER NOT NULL,
         health INTEGER NOT NULL,
-        num_lives INTEGER NOT NULL)
+        num_lives INTEGER NOT NULL,
+        collection INTEGER NOT NULL,
+        force INTEGER NOT NULL)
         ''')
 
 pygame.init()
@@ -541,26 +712,39 @@ camera = Camera()
 all_sprites = pygame.sprite.Group()
 particles = pygame.sprite.Group()
 sword = pygame.sprite.Group()
+sword_group = pygame.sprite.Group()
+equip_group = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 portals_group = pygame.sprite.Group()
+
 last = cur.execute(f'SELECT * FROM info'
                    f' WHERE id=(SELECT max(id) FROM info)').fetchall()
 flag = 0 if not last else ask_player()
 if last and flag:
     gamelevel = last[0][1]
     maplevel = last[0][2]
-    base = load_level(maps[gamelevel][maplevel])
-    player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
+    try:
+        base = load_level(maps[gamelevel][maplevel])
+        player, level_x, level_y = generate_level(load_level(maps[gamelevel][maplevel]))
+    except IndexError:
+        if final_screen():
+            chaos()
+        base = load_level('chaos.txt')
+        player, level_x, level_y = generate_level(load_level('chaos.txt'))
     player.hp = last[0][3]
     player.life = last[0][4]
+    collection = last[0][5]
+    sum_force = last[0][6]
 else:
     gamelevel = show_menu()
     maplevel = 0
     base = load_level(maps[gamelevel][0])
     player, level_x, level_y = generate_level(load_level(maps[gamelevel][0]))
+    collection = 0
+    sum_force = 0
 range_a = Range(player.rect)
 range_group = pygame.sprite.Group()
 range_group.add(range_a)
@@ -569,22 +753,24 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            add_data(gamelevel, maplevel, player.hp, player.life)
+            add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the click position is within the bomb's zone
             if range_a.rect.collidepoint(event.pos):
                 # Check for collision between enemies and the bomb
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
-                if enemy_hit:
+                if enemy_hit and player.has_weapon:
                     create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
-
+                    if not sum_force:
+                        player.has_weapon = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
                 if move_check() == 'wb':
-                    if pygame.sprite.spritecollideany(player, portals_group):
+                    if pygame.sprite.spritecollideany(player, portals_group) or \
+                            pygame.sprite.spritecollideany(player, equip_group):
                         continue
                     smooth_player_move_right()
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
@@ -603,9 +789,14 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
                         maplevel += 1
-                        fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        try:
+                            fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        except IndexError:
+                            if final_screen():
+                                chaos()
+                                fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
                     smooth_player_move_up()
             elif event.key == pygame.K_ESCAPE:
@@ -613,7 +804,6 @@ while True:
     if state:
         for enemy in enemy_group:
             enemy.move_towards_player(player.rect)
-
         particles.update()
         sword.update()
         screen.fill((0, 0, 255))
@@ -621,9 +811,11 @@ while True:
         walls_group.draw(screen)
         portals_group.draw(screen)
         player_group.draw(screen)
+        equip_group.draw(screen)
         enemy_group.draw(screen)
         particles.draw(screen)
         sword.draw(screen)
+        sword_group.draw(screen)
         range_a.update_position(player.rect)
         range_group.draw(screen)
         range_group.update()
@@ -633,16 +825,40 @@ while True:
             camera.apply(sprite)
 
         draw_player_health()
+        draw_collection()
         LIFE = player.life
 
         if player.hp == 0 and player.life == 1:
             game_over()
+        # коллекционирование инвентаря, находящегося на карте
+        for thing in equip_group:
+            if pygame.sprite.collide_rect(player, thing):
+                if thing.random_type == 1:
+                    player.hp += 20
+                    if player.hp > 100:
+                        player.hp %= 100
+                        player.life += 1
+                elif thing.random_type == 3:
+                    player.hp += 25
+                    if player.hp > 100:
+                        player.hp %= 100
+                        player.life += 1
+                collection += 1
+                thing.kill()
+                if collection // 10 >= 1:
+                    ask_for_exchange()
+        for sw in sword_group:
+            if pygame.sprite.collide_rect(player, sw):
+                player.has_weapon = True
+                sw.kill()
+                sum_force += 1
         for enemy in enemy_group:
             if pygame.sprite.collide_rect(player, enemy):
                 enemies_in_radius = pygame.sprite.spritecollide(range_a, enemy_group, False)
                 num_enemies_in_radius = len(enemies_in_radius)
                 total_damage = len(enemies_in_radius) * DAMAGE
                 player.take_hit(total_damage)
+
     else:
         if pause():
             state = 1

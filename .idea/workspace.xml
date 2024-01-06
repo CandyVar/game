@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ меню после заставки">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
-    </list>
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменения в функции take_hit (у врагов)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,6 +24,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -44,6 +42,9 @@
         <option name="url" value="https://github.com/CandyVar/game" />
       </UrlAndAccount>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="vcs://C:/Users/vlc55/PycharmProjects/3dtodecember/game/и.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -64,9 +65,18 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/vlc55/PycharmProjects/3dtodecember/game/data&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\vlc55\PycharmProjects\3dtodecember\game\data" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\vlc55\PycharmProjects\3dtodecember\game\data" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="и" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="game" />
@@ -91,6 +101,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
+        <item itemvalue="Python.и" />
         <item itemvalue="Python.и" />
       </list>
     </recent_temporary>
@@ -134,7 +148,91 @@
       <option name="project" value="LOCAL" />
       <updated>1703452069689</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="окно game over после смерти">
+      <created>1703711630392</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1703711630392</updated>
+    </task>
+    <task id="LOCAL-00006" summary="возможность продолжить игру после выхода">
+      <created>1703773117741</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1703773117741</updated>
+    </task>
+    <task id="LOCAL-00007" summary="возможность продолжить игру после выхода">
+      <created>1703773204202</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703773204202</updated>
+    </task>
+    <task id="LOCAL-00008" summary="изменение функции game over">
+      <created>1703781962820</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1703781962820</updated>
+    </task>
+    <task id="LOCAL-00009" summary="изменила продолжение игры и добавление в бд">
+      <created>1703843539293</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1703843539293</updated>
+    </task>
+    <task id="LOCAL-00010" summary="+ нефункциональные предметы">
+      <created>1703947080753</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1703947080753</updated>
+    </task>
+    <task id="LOCAL-00011" summary="изменила бд, фон и цвет текста">
+      <created>1703949425249</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1703949425249</updated>
+    </task>
+    <task id="LOCAL-00012" summary="+ восстанавливающие зелья, изменение текстур мечей и хаос">
+      <created>1704362790296</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1704362790296</updated>
+    </task>
+    <task id="LOCAL-00013" summary="+ восстанавливающие зелья, изменение текстур мечей и хаос">
+      <created>1704362845005</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1704362845005</updated>
+    </task>
+    <task id="LOCAL-00014" summary="///">
+      <created>1704394875890</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1704394875891</updated>
+    </task>
+    <task id="LOCAL-00015" summary="изменила цвет надписи на финальном окне">
+      <created>1704395223596</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1704395223596</updated>
+    </task>
+    <task id="LOCAL-00016" summary="изменения в функции take_hit (у врагов)">
+      <created>1704572995844</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1704572995844</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -153,7 +251,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/vix" />
+                        <option value="vix" />
                       </list>
                     </value>
                   </entry>
@@ -170,7 +268,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/код" />
+                        <option value="vix" />
                       </list>
                     </value>
                   </entry>
@@ -181,9 +279,24 @@
         </entry>
       </map>
     </option>
-    <option name="OPEN_GENERIC_TABS">
+    <option name="RECENT_FILTERS">
       <map>
-        <entry key="41d44fa1-9f6d-431d-904e-86b1e35ab437" value="TOOL_WINDOW" />
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="vix" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="main" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
@@ -191,6 +304,16 @@
     <MESSAGE value="data" />
     <MESSAGE value="примерный вид базы данных" />
     <MESSAGE value="+ меню после заставки" />
-    <option name="LAST_COMMIT_MESSAGE" value="+ меню после заставки" />
+    <MESSAGE value="окно game over после смерти" />
+    <MESSAGE value="возможность продолжить игру после выхода" />
+    <MESSAGE value="изменение функции game over" />
+    <MESSAGE value="изменила продолжение игры и добавление в бд" />
+    <MESSAGE value="+ нефункциональные предметы" />
+    <MESSAGE value="изменила бд, фон и цвет текста" />
+    <MESSAGE value="+ восстанавливающие зелья, изменение текстур мечей и хаос" />
+    <MESSAGE value="///" />
+    <MESSAGE value="изменила цвет надписи на финальном окне" />
+    <MESSAGE value="изменения в функции take_hit (у врагов)" />
+    <option name="LAST_COMMIT_MESSAGE" value="изменения в функции take_hit (у врагов)" />
   </component>
 </project>
