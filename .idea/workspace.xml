@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменила цвет надписи на финальном окне">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменения в функции take_hit (у врагов)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -227,7 +225,14 @@
       <option name="project" value="LOCAL" />
       <updated>1704395223596</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="изменения в функции take_hit (у врагов)">
+      <created>1704572995844</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1704572995844</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -308,6 +313,7 @@
     <MESSAGE value="+ восстанавливающие зелья, изменение текстур мечей и хаос" />
     <MESSAGE value="///" />
     <MESSAGE value="изменила цвет надписи на финальном окне" />
-    <option name="LAST_COMMIT_MESSAGE" value="изменила цвет надписи на финальном окне" />
+    <MESSAGE value="изменения в функции take_hit (у врагов)" />
+    <option name="LAST_COMMIT_MESSAGE" value="изменения в функции take_hit (у врагов)" />
   </component>
 </project>
