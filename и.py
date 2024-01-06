@@ -207,15 +207,19 @@ class Enemy(pygame.sprite.Sprite):
 
     def take_hit(self):
         global sum_force
-        if 3 > sum_force:
+        s = sum_force
+        if 1 <= sum_force < 10:
+            self.hp -= 1
+            sum_force -= 1
+        elif 10 <= sum_force < 20:
+            self.hp -= 2
+            sum_force -= 2
+        elif sum_force <= 20:
             self.hp -= 3
             sum_force -= 3
-        else:
-            self.hp -= sum_force
-            sum_force = 0
         if self.hp <= 0:
             self.kill()
-        Sword(self.rect.x / tile_width, self.rect.y / tile_height, f=sum_force)
+        Sword(self.rect.x / tile_width, self.rect.y / tile_height, f=s)
 
 
 class Camera:

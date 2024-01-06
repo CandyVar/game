@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="///">
-      <change beforePath="$PROJECT_DIR$/data/chaos.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/chaos.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="изменила цвет надписи на финальном окне">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -221,7 +220,14 @@
       <option name="project" value="LOCAL" />
       <updated>1704394875891</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="изменила цвет надписи на финальном окне">
+      <created>1704395223596</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1704395223596</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -301,6 +307,7 @@
     <MESSAGE value="изменила бд, фон и цвет текста" />
     <MESSAGE value="+ восстанавливающие зелья, изменение текстур мечей и хаос" />
     <MESSAGE value="///" />
-    <option name="LAST_COMMIT_MESSAGE" value="///" />
+    <MESSAGE value="изменила цвет надписи на финальном окне" />
+    <option name="LAST_COMMIT_MESSAGE" value="изменила цвет надписи на финальном окне" />
   </component>
 </project>
