@@ -110,7 +110,7 @@ class Player(pygame.sprite.Sprite):
 
     def take_hit(self, damage):
         if self.life <= 0:
-            terminate()
+            game_over()
         elif self.hp <= 0:
             self.life -= 1
             self.hp = 100
@@ -630,7 +630,7 @@ def chaos():
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
     global base, tiles_group, tile_height, tile_width, camera, all_sprites, player_group, enemy_group, walls_group, \
-        portals_group, player, level_x, level_y, state
+        portals_group, player, level_x, level_y, state, equip_group, sword_group
     fade_duration = 2000
     fade_steps = 50
     fade_step_duration = fade_duration // fade_steps
@@ -756,9 +756,7 @@ while True:
             add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Check if the click position is within the bomb's zone
             if range_a.rect.collidepoint(event.pos):
-                # Check for collision between enemies and the bomb
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
                 if enemy_hit and player.has_weapon:
                     create_particles(pygame.mouse.get_pos())
@@ -801,6 +799,9 @@ while True:
                     smooth_player_move_up()
             elif event.key == pygame.K_ESCAPE:
                 state = 0
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e and collection >= 10:
+                    ask_for_exchange()
     if state:
         for enemy in enemy_group:
             enemy.move_towards_player(player.rect)
