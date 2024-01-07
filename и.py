@@ -114,7 +114,7 @@ class Player(pygame.sprite.Sprite):
         elif self.hp <= 0:
             self.life -= 1
             self.hp = 100
-        if self.hp == 0 and self.life == 1:
+        if self.hp == 0 and self.life == 0:
             game_over()
 
         current_time = time.time()
@@ -219,6 +219,7 @@ class Enemy(pygame.sprite.Sprite):
             sum_force -= 3
         if self.hp <= 0:
             self.kill()
+
         Sword(self.rect.x / tile_width, self.rect.y / tile_height, f=s)
 
 
@@ -234,6 +235,18 @@ class Camera:
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
+
+
+def portal_sound():
+    pygame.mixer.music.load('data/перемещение_1.wav')
+    p = pygame.mixer.Sound('data/перемещение_1.wav')
+    p.play()
+
+
+def sword_sound():
+    pygame.mixer.music.load('data/удар_меча_1.wav')
+    p = pygame.mixer.Sound('data/удар_меча_1.wav')
+    p.play()
 
 
 def load_level(filename):
@@ -325,7 +338,7 @@ def game_over():
             if ev.type == pygame.QUIT:
                 terminate()
             if ev.type == pygame.MOUSEBUTTONDOWN or ev.type == pygame.KEYDOWN:
-                return
+                terminate()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -629,6 +642,7 @@ def chaos():
 
 
 def fade_out_and_load_new_world(screen, clock, new_map_filename):
+    portal_sound()
     global base, tiles_group, tile_height, tile_width, camera, all_sprites, player_group, enemy_group, walls_group, \
         portals_group, player, level_x, level_y, state, equip_group, sword_group
     fade_duration = 2000
@@ -686,6 +700,7 @@ cur.execute('''
         force INTEGER NOT NULL)
         ''')
 
+pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 FPS = 50
 DAMAGE = 20
@@ -759,6 +774,7 @@ while True:
             if range_a.rect.collidepoint(event.pos):
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
                 if enemy_hit and sum_force >= 1:
+                    sword_sound()
                     create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
         elif event.type == pygame.KEYDOWN:
@@ -827,8 +843,6 @@ while True:
         draw_collection()
         LIFE = player.life
 
-        if player.hp == 0 and player.life == 1:
-            game_over()
         # коллекционирование инвентаря, находящегося на карте
         for thing in equip_group:
             if pygame.sprite.collide_rect(player, thing):
