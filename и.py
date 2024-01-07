@@ -214,7 +214,7 @@ class Enemy(pygame.sprite.Sprite):
         elif 10 <= sum_force < 20:
             self.hp -= 2
             sum_force -= 2
-        elif sum_force <= 20:
+        elif sum_force >= 20:
             self.hp -= 3
             sum_force -= 3
         if self.hp <= 0:
@@ -495,7 +495,7 @@ def draw_player_health():
 
 def draw_collection():
     font = pygame.font.Font(None, 22)
-    text = font.render(f' Inventory: {collection} | Weapon: {player.has_weapon}', True, (255, 255, 255))
+    text = font.render(f' Inventory: {collection} | Weapon: {sum_force}', True, (255, 255, 255))
     text_rect = text.get_rect()
     text_rect.topleft = (0, 10)
 
@@ -758,11 +758,9 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if range_a.rect.collidepoint(event.pos):
                 enemy_hit = pygame.sprite.spritecollideany(range_a, enemy_group)
-                if enemy_hit and player.has_weapon:
+                if enemy_hit and sum_force >= 1:
                     create_particles(pygame.mouse.get_pos())
                     enemy_hit.take_hit()
-                    if not sum_force:
-                        player.has_weapon = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
@@ -850,7 +848,6 @@ while True:
                     ask_for_exchange()
         for sw in sword_group:
             if pygame.sprite.collide_rect(player, sw):
-                player.has_weapon = True
                 sw.kill()
                 sum_force += 1
         for enemy in enemy_group:
