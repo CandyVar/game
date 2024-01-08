@@ -6,7 +6,7 @@ import sqlite3
 import pygame
 
 
-def load_image(name, colorkey=None):
+def load_image(name):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
@@ -522,6 +522,25 @@ def draw_collection():
     screen.blit(text, text_rect)
 
 
+def draw_done_levels():
+    levels = cur.execute(f'SELECT maplevel FROM info').fetchall()
+    try:
+        ind = max(i for i, j in enumerate(levels) if j[0] == 0)
+        num = len(levels[ind:])
+    except ValueError:
+        ind, num = 0, 0
+    font = pygame.font.Font(None, 22)
+    text = font.render(f' Completed levels: {num}', True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.topleft = (0, 45)
+
+    # Отрисовка белой рамки
+    pygame.draw.rect(screen, (255, 255, 255), (0, 42, 180, 25), 2)
+
+    # Отрисовка текста
+    screen.blit(text, text_rect)
+
+
 def animation_update():
     particles.update()
     sword.update()
@@ -545,6 +564,7 @@ def animation_update():
 
     draw_player_health()
     draw_collection()
+    draw_done_levels()
 
     pygame.display.flip()
     clock.tick(FPS)
@@ -867,6 +887,7 @@ while True:
 
         draw_player_health()
         draw_collection()
+        draw_done_levels()
         LIFE = player.life
 
         # коллекционирование инвентаря, находящегося на карте
