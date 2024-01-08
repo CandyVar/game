@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ меню после заставки">
+    <list default="true" id="5a18d40d-1a12-4287-83ac-23954f8fc31c" name="Changes" comment="+ 2 звук удара мечом, переноса в другой мир">
+      <change afterPath="$PROJECT_DIR$/data/перемещение_1.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/удар_меча_1.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/удар_о_стену.wav" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/chaos.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/chaos.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/и.py" beforeDir="false" afterPath="$PROJECT_DIR$/и.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -141,7 +143,14 @@
       <option name="project" value="LOCAL" />
       <updated>1703452069689</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="+ 2 звук удара мечом, переноса в другой мир">
+      <created>1704660720500</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1704660720500</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -177,7 +186,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/main" />
+                        <option value="vix" />
                       </list>
                     </value>
                   </entry>
@@ -200,6 +209,11 @@
             <list>
               <RecentGroup>
                 <option name="FILTER_VALUES">
+                  <option value="vix" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
                   <option value="origin/main" />
                 </option>
               </RecentGroup>
@@ -213,6 +227,7 @@
     <MESSAGE value="data" />
     <MESSAGE value="примерный вид базы данных" />
     <MESSAGE value="+ меню после заставки" />
-    <option name="LAST_COMMIT_MESSAGE" value="+ меню после заставки" />
+    <MESSAGE value="+ 2 звук удара мечом, переноса в другой мир" />
+    <option name="LAST_COMMIT_MESSAGE" value="+ 2 звук удара мечом, переноса в другой мир" />
   </component>
 </project>

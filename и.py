@@ -238,14 +238,17 @@ class Camera:
 
 
 def portal_sound():
-    pygame.mixer.music.load('data/перемещение_1.wav')
     p = pygame.mixer.Sound('data/перемещение_1.wav')
     p.play()
 
 
 def sword_sound():
-    pygame.mixer.music.load('data/удар_меча_1.wav')
-    p = pygame.mixer.Sound('data/удар_меча_1.wav')
+    p = pygame.mixer.Sound('data/удар_меча_1.mp3')
+    p.play()
+
+
+def hitting_the_wall_sound():
+    p = pygame.mixer.Sound('data/удар_о_стену.wav')
     p.play()
 
 
@@ -781,21 +784,42 @@ while True:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 smooth_player_move_left()
                 if move_check() == 'wb':
-                    if pygame.sprite.spritecollideany(player, portals_group) or \
-                            pygame.sprite.spritecollideany(player, equip_group):
+                    if pygame.sprite.spritecollideany(player, portals_group):
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+                        maplevel += 1
+                        try:
+                            fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        except IndexError:
+                            if final_screen():
+                                chaos()
+                                fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
+                    else:
+                        hitting_the_wall_sound()
                     smooth_player_move_right()
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 smooth_player_move_right()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+                        maplevel += 1
+                        try:
+                            fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        except IndexError:
+                            if final_screen():
+                                chaos()
+                                fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
+                    else:
+                        hitting_the_wall_sound()
                     smooth_player_move_left()
             elif event.key == pygame.K_UP or event.key == pygame.K_w:
                 smooth_player_move_up()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
                         continue
+                    else:
+                        hitting_the_wall_sound()
                     smooth_player_move_down()
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                 smooth_player_move_down()
@@ -810,6 +834,8 @@ while True:
                                 chaos()
                                 fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
+                    else:
+                        hitting_the_wall_sound()
                     smooth_player_move_up()
             elif event.key == pygame.K_ESCAPE:
                 state = 0
