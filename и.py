@@ -524,11 +524,10 @@ def draw_collection():
 
 def draw_done_levels():
     levels = cur.execute(f'SELECT maplevel FROM info').fetchall()
-    try:
-        ind = max(i for i, j in enumerate(levels) if j[0] == 0)
-        num = len(levels[ind:])
-    except ValueError:
-        ind, num = 0, 0
+    if not flag or not levels:
+        num = 0
+    else:
+        num = levels[0][-1]
     font = pygame.font.Font(None, 22)
     text = font.render(f' Completed levels: {num}', True, (255, 255, 255))
     text_rect = text.get_rect()
@@ -725,6 +724,8 @@ cur.execute('''
 
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
+pygame.mixer.music.load('data/Фоновая_музыка.mp3')
+pygame.mixer.music.play(-1)
 FPS = 50
 DAMAGE = 20
 LIFE = 1
@@ -810,6 +811,7 @@ while True:
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
+                            portal_sound()
                             if final_screen():
                                 chaos()
                                 fade_out_and_load_new_world(screen, clock, 'chaos.txt')
@@ -826,6 +828,7 @@ while True:
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
+                            portal_sound()
                             if final_screen():
                                 chaos()
                                 fade_out_and_load_new_world(screen, clock, 'chaos.txt')
@@ -850,6 +853,7 @@ while True:
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
+                            portal_sound()
                             if final_screen():
                                 chaos()
                                 fade_out_and_load_new_world(screen, clock, 'chaos.txt')
