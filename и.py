@@ -524,7 +524,6 @@ def draw_collection():
 
 def draw_done_levels():
     levels = list(cur.execute(f'SELECT id, maplevel, status FROM info ORDER BY id DESC').fetchall())
-    print(levels)
     if not flag:
         num = 0
     else:
