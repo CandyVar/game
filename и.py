@@ -346,9 +346,9 @@ def game_over():
         clock.tick(FPS)
 
 
-def add_data(g, m, h, n, col, f):
-    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection, force)'
-                f' VALUES ("{g}", {m}, {h}, {n}, {col}, {f})')
+def add_data(g, m, h, n, col, f, st):
+    cur.execute(f'INSERT INTO info (gamelevel, maplevel, health, num_lives, collection, force, status)'
+                f' VALUES ("{g}", {m}, {h}, {n}, {col}, {f}, "{st}")')
     con.commit()
 
 
@@ -523,11 +523,17 @@ def draw_collection():
 
 
 def draw_done_levels():
-    levels = cur.execute(f'SELECT maplevel FROM info').fetchall()
-    if not flag or not levels:
+    levels = list(cur.execute(f'SELECT id, maplevel, status FROM info ORDER BY id DESC').fetchall())
+    print(levels)
+    if not flag:
         num = 0
     else:
-        num = levels[0][-1]
+        ind = 0
+        for j in levels:
+            if j[1] == 0 and j[2] == 'done':
+                break
+            ind += 1
+        num = len([i for i in levels[:ind + 1] if i[2] == 'done'])
     font = pygame.font.Font(None, 22)
     text = font.render(f' Completed levels: {num}', True, (255, 255, 255))
     text_rect = text.get_rect()
@@ -719,7 +725,8 @@ cur.execute('''
         health INTEGER NOT NULL,
         num_lives INTEGER NOT NULL,
         collection INTEGER NOT NULL,
-        force INTEGER NOT NULL)
+        force INTEGER NOT NULL,
+        status TEXT NOT NULL)
         ''')
 
 pygame.mixer.pre_init(44100, -16, 1, 512)
@@ -792,7 +799,7 @@ state = 1
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+            add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force, 'not')
             terminate()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if range_a.rect.collidepoint(event.pos):
@@ -806,8 +813,9 @@ while True:
                 smooth_player_move_left()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force, 'done')
                         maplevel += 1
+                        flag = 1
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
@@ -823,8 +831,9 @@ while True:
                 smooth_player_move_right()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force, 'done')
                         maplevel += 1
+                        flag = 1
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
@@ -848,8 +857,9 @@ while True:
                 smooth_player_move_down()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
-                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force)
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force, 'done')
                         maplevel += 1
+                        flag = 1
                         try:
                             fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
                         except IndexError:
