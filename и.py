@@ -69,8 +69,12 @@ class Particle(pygame.sprite.Sprite):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
-        self.image = tile_images[tile_type][gl()]
+        self.original_image = tile_images[tile_type][gl()]
+        self.image = self.random_flip(self.original_image)
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+    def random_flip(self, image):
+        return pygame.transform.flip(image, random.choice([True, False]), random.choice([True, False]))
 
 
 class Range(pygame.sprite.Sprite):
