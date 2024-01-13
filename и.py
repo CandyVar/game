@@ -178,7 +178,7 @@ class Goods(pygame.sprite.Sprite):
         # случайный выбор текстуры предмета
         image_names = ['treasure.png', 'drink.png', 'torch.png', 'drink2.png', 'money.png',
                        'diamond.png', 'blue_stone.png', 'emerald_ball.png', 'green_stone.png',
-                       'red_stone.png', 'white_ball.png', 'white_stone.png']
+                       'red_stone.png', 'white_ball.png', 'white_stone.png', 'gem7.png', 'paper1.png']
         self.random_type = random.randint(0, len(image_names) - 1)
         self.image = pygame.transform.scale(load_image(image_names[self.random_type]), (50, 50))
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
