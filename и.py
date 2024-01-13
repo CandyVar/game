@@ -15,6 +15,9 @@ def load_image(name):
     return image
 
 
+color = (0, 0, 0)
+
+
 class Button:
     def __init__(self, x, y, color, text=''):
         self.x, self.y = x, y
@@ -66,7 +69,7 @@ class Particle(pygame.sprite.Sprite):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
-        self.image = tile_images[tile_type]
+        self.image = tile_images[tile_type][gl()]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
@@ -86,7 +89,7 @@ class Range(pygame.sprite.Sprite):
 class Wall(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(walls_group, all_sprites)
-        self.image = tile_images['wall']
+        self.image = tile_images['wall'][gl()]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
@@ -275,7 +278,17 @@ def terminate():
     sys.exit()
 
 
+def gl():
+    if gamelevel == 'easy':
+        return 0
+    elif gamelevel == 'normal':
+        return 1
+    elif gamelevel == 'hard':
+        return 2
+
+
 def show_menu():
+    global color
     fon = pygame.transform.scale(load_image('forest.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     easy = Button(150, 180, (23, 38, 29), 'Easy')
@@ -296,12 +309,15 @@ def show_menu():
                 pos = pygame.mouse.get_pos()
                 if easy.x < pos[0] < easy.x + easy.width and easy.y < pos[1] < easy.y + easy.height:
                     DAMAGE = 5
+                    color = (50, 100, 50)
                     return 'easy'
                 elif normal.x < pos[0] < normal.x + normal.width and normal.y < pos[1] < normal.y + normal.height:
                     DAMAGE = 10
+                    color = (50, 50, 50)
                     return 'normal'
                 elif hard.x < pos[0] < hard.x + hard.width and hard.y < pos[1] < hard.y + hard.height:
                     DAMAGE = 20
+                    color = (100, 0, 0)
                     return 'hard'
 
         pygame.display.flip()
@@ -488,7 +504,7 @@ def final_screen():
                 terminate()
             elif ev.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                if start_chaos.x < pos[0] < start_chaos.x + start_chaos.width\
+                if start_chaos.x < pos[0] < start_chaos.x + start_chaos.width \
                         and start_chaos.y < pos[1] < start_chaos.y + start_chaos.height:
                     return 1
                 return 0
@@ -548,7 +564,7 @@ def draw_done_levels():
 def animation_update():
     particles.update()
     sword.update()
-    screen.fill((0, 0, 255))
+    screen.fill(color)
     tiles_group.draw(screen)
     walls_group.draw(screen)
     equip_group.draw(screen)
@@ -740,13 +756,13 @@ WIDTH, HEIGHT = 500, 500
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = (0, 0, WIDTH, HEIGHT)
-screen.fill((0, 0, 255))
+screen.fill(color)
 start_screen()
 STEP = 50
 
 tile_images = {
-    'wall': load_image('box.png'),
-    'empty': load_image('grass.png'),
+    'wall': [load_image('box.png'), load_image('box1.png'), load_image('box2.png')],
+    'empty': [load_image('grass.png'), load_image('grass1.png'), load_image('grass2.png')],
     'enemy': pygame.transform.scale(load_image('ghost.png'), (50, 50)),
     'portal': load_image('portal.png')
 }
@@ -880,7 +896,7 @@ while True:
             enemy.move_towards_player(player.rect)
         particles.update()
         sword.update()
-        screen.fill((0, 0, 255))
+        screen.fill(color)
         tiles_group.draw(screen)
         walls_group.draw(screen)
         portals_group.draw(screen)
