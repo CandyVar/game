@@ -710,7 +710,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
 
 maps = {
     'easy': ['map.txt', 'map2.txt'],
-    'normal': ['map.txt', 'map2.txt'],
+    'normal': ['map.txt', 'map2.txt', 'map3.txt'],
     'hard': ['map.txt', 'map2.txt']
 }
 
@@ -848,6 +848,16 @@ while True:
                 smooth_player_move_up()
                 if move_check() == 'wb':
                     if pygame.sprite.spritecollideany(player, portals_group):
+                        add_data(gamelevel, maplevel, player.hp, player.life, collection, sum_force, 'done')
+                        maplevel += 1
+                        flag = 1
+                        try:
+                            fade_out_and_load_new_world(screen, clock, maps[gamelevel][maplevel])
+                        except IndexError:
+                            portal_sound()
+                            if final_screen():
+                                chaos()
+                                fade_out_and_load_new_world(screen, clock, 'chaos.txt')
                         continue
                     else:
                         hitting_the_wall_sound()
