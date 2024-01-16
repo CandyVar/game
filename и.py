@@ -709,7 +709,7 @@ def fade_out_and_load_new_world(screen, clock, new_map_filename):
 
 
 maps = {
-    'easy': ['map.txt', 'map2.txt'],
+    'easy': ['map.txt', 'map2.txt', 'map4.txt'],
     'normal': ['map.txt', 'map2.txt', 'map3.txt'],
     'hard': ['map.txt', 'map2.txt']
 }
